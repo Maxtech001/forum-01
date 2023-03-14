@@ -18,6 +18,7 @@ const dbfile = "./db/forum.db"
 
 var db *sql.DB
 
+// open database
 func dbOpen() *sql.DB {
 	db, err := sql.Open("sqlite3", dbfile)
 	if err != nil {
@@ -27,6 +28,7 @@ func dbOpen() *sql.DB {
 	return db
 }
 
+// insert new user
 func dbInsertUser(user user) error {
 	stmt, err := db.Prepare("INSERT INTO user(id, name, email, password) values(?, ?, ?, ?)")
 	if err != nil {
@@ -42,6 +44,7 @@ func dbInsertUser(user user) error {
 	return nil
 }
 
+// check if user exists
 func dbGetUserByIdOrEmail(input string) []user {
 	var result []user
 	rows, err := db.Query("SELECT * FROM user WHERE id=? OR email=?", input, input)
@@ -63,12 +66,12 @@ func dbGetUserByIdOrEmail(input string) []user {
 	return result
 }
 
+// authenticate by email or username and password
 func dbAuthenticateUser(input, pwd string) bool {
 	result := false
 	var user user
 	err := db.QueryRow("SELECT id FROM user WHERE (id=? or email=?) AND password=?", input, input, pwd).Scan(&user.Id)
 	if err != nil {
-		fmt.Println(err)
 		return result
 	}
 	if user.Id != "" {
