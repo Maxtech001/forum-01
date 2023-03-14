@@ -1,0 +1,78 @@
+package main
+
+import (
+	"database/sql"
+	"fmt"
+
+	_ "github.com/mattn/go-sqlite3"
+)
+
+type user struct {
+	Id       string
+	Name     string
+	Email    string
+	Password string
+}
+
+const dbfile = "./db/forum.db"
+
+var db *sql.DB
+
+func dbOpen() *sql.DB {
+	db, err := sql.Open("sqlite3", dbfile)
+	if err != nil {
+		fmt.Println(err)
+		return nil
+	}
+	return db
+}
+
+func dbInsertUser(user user) error {
+	stmt, err := db.Prepare("INSERT INTO user(id, name, email, password) values(?, ?, ?, ?)")
+	if err != nil {
+		return err
+	}
+	defer stmt.Close()
+
+	_, err = stmt.Exec(user.Id, user.Name, user.Email, user.Password)
+	if err != nil {
+		return err
+
+	}
+	return nil
+}
+
+func dbGetUserByIdOrEmail(input string) []user {
+	var result []user
+	rows, err := db.Query("SELECT * FROM user WHERE id=? OR email=?", input, input)
+	if err != nil {
+		fmt.Println(err)
+		return result
+	}
+	defer rows.Close()
+
+	for rows.Next() {
+		var user user
+		err = rows.Scan(&user.Id, &user.Name, &user.Email, &user.Password)
+		if err != nil {
+			fmt.Println(err)
+			return result
+		}
+		result = append(result, user)
+	}
+	return result
+}
+
+func dbAuthenticateUser(input, pwd string) bool {
+	result := false
+	var user user
+	err := db.QueryRow("SELECT id FROM user WHERE (id=? or email=?) AND password=?", input, input, pwd).Scan(&user.Id)
+	if err != nil {
+		fmt.Println(err)
+		return result
+	}
+	if user.Id != "" {
+		result = true
+	}
+	return result
+}
