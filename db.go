@@ -29,7 +29,9 @@ func dbInsertUser(user user) error {
 	}
 	defer stmt.Close()
 
-	_, err = stmt.Exec(user.Id, user.Name, user.Email, user.Password)
+	pwd := HashPassword(user.Password)
+
+	_, err = stmt.Exec(user.Id, user.Name, user.Email, pwd)
 	if err != nil {
 		return err
 
@@ -59,16 +61,14 @@ func dbGetUserByIdOrEmail(input string) []user {
 	return result
 }
 
-// authenticate by email or username and password
+// authenticate by username and password
 func dbAuthenticateUser(input, pwd string) bool {
 	result := false
 	var user user
-	err := db.QueryRow("SELECT id FROM user WHERE (id=? OR email=?) AND password=?", input, input, pwd).Scan(&user.Id)
+
+	err := db.QueryRow("SELECT password FROM user WHERE id=?", input).Scan(&user.Password) //todo, use count(*) instead
 	if err != nil {
 		return result
 	}
-	if user.Id != "" {
-		result = true
-	}
-	return result
+	return CheckPasswordHash(pwd, user.Password)
 }
