@@ -7,13 +7,6 @@ import (
 	_ "github.com/mattn/go-sqlite3"
 )
 
-type user struct {
-	Id       string
-	Name     string
-	Email    string
-	Password string
-}
-
 const dbfile = "./db/forum.db"
 
 var db *sql.DB
@@ -70,7 +63,7 @@ func dbGetUserByIdOrEmail(input string) []user {
 func dbAuthenticateUser(input, pwd string) bool {
 	result := false
 	var user user
-	err := db.QueryRow("SELECT id FROM user WHERE (id=? or email=?) AND password=?", input, input, pwd).Scan(&user.Id)
+	err := db.QueryRow("SELECT id FROM user WHERE (id=? OR email=?) AND password=?", input, input, pwd).Scan(&user.Id)
 	if err != nil {
 		return result
 	}
