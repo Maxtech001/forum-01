@@ -13,7 +13,7 @@ import (
 
 func main() {
 
-	// Setting up server
+	// Setting up database
 	db := database.DbOpen()
 
 	if db == nil {
@@ -21,7 +21,7 @@ func main() {
 	}
 	defer db.Close()
 
-	// Default port
+	// Starting server
 	if len(os.Args) == 1 {
 		} else if len(os.Args) == 2 {
 			server.Port = os.Args[1]
