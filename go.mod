@@ -1,4 +1,4 @@
-module forum
+module 01.kood.tech/git/kretesaak/forum
 
 go 1.19
 

@@ -1,25 +1,25 @@
-package main
+package database
 
-type user struct {
+type User struct {
 	Id       string
 	Name     string
 	Email    string
 	Password string
 }
 
-type post struct {
+type Post struct {
 	Id       int
 	User_id  int
 	Title    string
 	Time     string
 	Content  string
-	Comments []comment
+	Comments []Comment
 	Likes    int
 	Dislikes int
-	Tags     []tag
+	Tags     []Tag
 }
 
-type comment struct {
+type Comment struct {
 	Id       int
 	User_id  string
 	Time     string
@@ -28,12 +28,12 @@ type comment struct {
 	Dislikes int
 }
 
-type tag struct {
+type Tag struct {
 	Id   int
 	Name string
 }
 
-type mainpage struct {
+type Mainpage struct {
 	Username string
-	Posts    []post
+	Posts    []Post
 }

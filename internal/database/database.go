@@ -1,4 +1,4 @@
-package main
+package database
 
 import (
 	"database/sql"
@@ -12,7 +12,7 @@ const dbfile = "./db/forum.db"
 var db *sql.DB
 
 // open database
-func dbOpen() *sql.DB {
+func DbOpen() *sql.DB {
 	db, err := sql.Open("sqlite3", dbfile)
 	if err != nil {
 		fmt.Println(err)
@@ -22,7 +22,7 @@ func dbOpen() *sql.DB {
 }
 
 // insert new user
-func dbInsertUser(user user) error {
+func dbInsertUser(user User) error {
 	stmt, err := db.Prepare("INSERT INTO user(id, name, email, password) values(?, ?, ?, ?)")
 	if err != nil {
 		return err
@@ -40,8 +40,8 @@ func dbInsertUser(user user) error {
 }
 
 // check if user exists
-func dbGetUserByIdOrEmail(input string) []user {
-	var result []user
+func dbGetUserByIdOrEmail(input string) []User {
+	var result []User
 	rows, err := db.Query("SELECT * FROM user WHERE id=? OR email=?", input, input)
 	if err != nil {
 		fmt.Println(err)
@@ -50,7 +50,7 @@ func dbGetUserByIdOrEmail(input string) []user {
 	defer rows.Close()
 
 	for rows.Next() {
-		var user user
+		var user User
 		err = rows.Scan(&user.Id, &user.Name, &user.Email, &user.Password)
 		if err != nil {
 			fmt.Println(err)
@@ -64,7 +64,7 @@ func dbGetUserByIdOrEmail(input string) []user {
 // authenticate by username and password
 func dbAuthenticateUser(input, pwd string) bool {
 	result := false
-	var user user
+	var user User
 
 	err := db.QueryRow("SELECT password FROM user WHERE id=?", input).Scan(&user.Password) //todo, use count(*) instead
 	if err != nil {
