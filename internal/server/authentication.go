@@ -59,7 +59,7 @@ func registerAuthHandler(w http.ResponseWriter, r *http.Request) {
 
 	var rf database.User
 
-	rf.Id = "sessionid"
+	rf.Id = "sessionid" // TODO vist?
 	rf.Name = username
 	rf.Email = email
 	rf.Password = password
