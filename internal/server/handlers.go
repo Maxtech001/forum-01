@@ -4,47 +4,57 @@ import (
 	"fmt"
 	"net/http"
 
-	"01.kood.tech/git/kretesaak/forum/internal/registration"
+	
 )
 
-// Registerhandler serves a from for registering new users
-func registerHandler(w http.ResponseWriter, r *http.Request) {
-	fmt.Println("*****registerHandler running*****")
-	tmpl.ExecuteTemplate(w, "register", nil)
-}
 
-// registerAuthHandler creates new user in database
-func registerAuthHandler(w http.ResponseWriter, r *http.Request) {
-	fmt.Println("*****registerAuthHandler running*****")
-	// Getting form data
-	r.ParseForm()
 
-	username := r.FormValue("usernameUp")
-	fmt.Println(username)
-	// TODO päras on if shortcircuit?
-	ua := registration.UsernameCorrect(username)
-	fmt.Println("Username alphanumeric: ", ua)
 
-	ul := registration.UsernameLen(username)
-	fmt.Println("Username length: ", ul)
+func loginHandler(w http.ResponseWriter, r *http.Request) {
+	fmt.Println("*****loginHandler running*****")
 
-	// check password criteria
-	password := r.FormValue("passwordUp")
-	fmt.Println(password)
-	pwc := registration.PswdConditions(password)
-	fmt.Println(pwc)
-	fmt.Println("password:", password, "\npswdLength:", len(password))
-
-	// Username has missing criteria
-	if !ua || !ul {
-		fmt.Println("Username has missing criteria")
-		// TODO see tekst peaks ilmuma normaalsesse kohta
-		tmpl.ExecuteTemplate(w, "register", "Please check username criteria")
+	// Error handling with wrong path
+	if r.URL.Path != "/login" {
+		http.Error(w, "Bad request - 404 resource not found.", http.StatusNotFound)
+		return
+	}
+	// Wrong method handling
+	if r.Method != "GET" && r.Method != "POST" {
+		http.Error(w, "Bad request - 405 method not allowed.", http.StatusMethodNotAllowed)
+		return
 	}
 
-	// Password criteria
-	if !pwc.Lowercase || !pwc.Uppercase || !pwc.Number || !pwc.Special || !pwc.Length || pwc.NoSpaces {
-		fmt.Println("Password has missing criteria")
-		tmpl.ExecuteTemplate(w, "register", "Please check password criteria")
+	// login connection
+	err := tmpl.ExecuteTemplate(w, "login", nil)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+}
+
+
+// TODO ta teeb praegu miskipärast kaks korda seda päringut (teine on tühi), luua login ja reg endpoint erinevalt esialgu
+// registerAuthHandler creates new user in database
+func registerHandler(w http.ResponseWriter, r *http.Request) {
+	fmt.Println("*****registerHandler running*****")
+
+	// Error handling with wrong path
+	if r.URL.Path != "/register" {
+
+		http.Error(w, "Bad request - 404 resource not found.", http.StatusNotFound)
+		return
+	}
+	// Wrong method handling
+	if r.Method != "GET" {
+
+		http.Error(w, "Bad request - 405 method not allowed.", http.StatusMethodNotAllowed)
+		return
+	}
+
+	// Register connection
+	err := tmpl.ExecuteTemplate(w, "register", nil)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
 	}
 }

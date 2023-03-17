@@ -1,6 +1,9 @@
 package registration
 
-import "unicode"
+import (
+	"unicode"
+	"regexp"
+)
 
 type Password struct {
 	Lowercase bool
@@ -56,4 +59,9 @@ func PswdConditions(p string) Password {
 	}
 
 	return pw
+}
+
+func IsValidEmail(e string) bool {
+	emailRegex := regexp.MustCompile(`^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$`)
+    return emailRegex.MatchString(e)
 }

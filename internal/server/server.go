@@ -7,6 +7,7 @@ import (
 	"html/template"
 	"log"
 	"net/http"
+	"fmt"
 )
 var (
 	Port = "8080" // default port
@@ -18,10 +19,17 @@ func StartServer() {
 
 	tmpl = template.Must(template.ParseGlob("templates/*.html"))
 
+	fmt.Println("Templates:")
+	for _, t := range tmpl.Templates() {
+		fmt.Println("- " + t.Name())
+	}
+
 
 	// Serving up the result with mux
 	mux := http.NewServeMux()
-	mux.HandleFunc("/", registerHandler) // starting endpoint, right now register page
+	mux.HandleFunc("/register", registerHandler) // registration page
+	mux.HandleFunc("/registerauth", registerAuthHandler) // registration page
+	mux.HandleFunc("/login", loginHandler) // logging page
 	// Artist endpoint creation
 
 	// Serving up files
