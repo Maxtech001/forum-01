@@ -1,8 +1,8 @@
 package registration
 
 import (
-	"unicode"
 	"regexp"
+	"unicode"
 )
 
 type Password struct {
@@ -17,10 +17,9 @@ type Password struct {
 const (
 	minUserLength = 6
 	maxUserLength = 20
-	minPswLength = 8
-	maxPswLength = 20
+	minPswLength  = 8
+	maxPswLength  = 20
 )
-
 
 // Checking for alphanumeric characters in username
 func UsernameCorrect(u string) bool {
@@ -68,5 +67,5 @@ func PswdConditions(p string) Password {
 // Checking if email follows email standards
 func IsValidEmail(e string) bool {
 	emailRegex := regexp.MustCompile(`^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$`)
-    return emailRegex.MatchString(e)
+	return emailRegex.MatchString(e)
 }

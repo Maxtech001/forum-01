@@ -3,12 +3,7 @@ package server
 import (
 	"fmt"
 	"net/http"
-
-	
 )
-
-
-
 
 func loginHandler(w http.ResponseWriter, r *http.Request) {
 	fmt.Println("*****loginHandler running*****")
@@ -19,7 +14,7 @@ func loginHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	// Wrong method handling
-	if r.Method != "GET" && r.Method != "POST" {
+	if r.Method != "GET"{
 		http.Error(w, "Bad request - 405 method not allowed.", http.StatusMethodNotAllowed)
 		return
 	}
@@ -31,7 +26,6 @@ func loginHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 }
-
 
 // TODO ta teeb praegu miskipärast kaks korda seda päringut (teine on tühi), luua login ja reg endpoint erinevalt esialgu
 // registerAuthHandler creates new user in database

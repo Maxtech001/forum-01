@@ -4,11 +4,12 @@ Server-specific settings
 package server
 
 import (
+	"fmt"
 	"html/template"
 	"log"
 	"net/http"
-	"fmt"
 )
+
 var (
 	Port = "8080" // default port
 	tmpl *template.Template
@@ -24,12 +25,12 @@ func StartServer() {
 		fmt.Println("- " + t.Name())
 	}
 
-
 	// Serving up the result with mux
 	mux := http.NewServeMux()
-	mux.HandleFunc("/register", registerHandler) // registration page
-	mux.HandleFunc("/registerauth", registerAuthHandler) // registration page
-	mux.HandleFunc("/login", loginHandler) // logging page
+	mux.HandleFunc("/register", registerHandler)         // registration page
+	mux.HandleFunc("/registerauth", registerAuthHandler) // registration authentication page
+	mux.HandleFunc("/login", loginHandler)               // logging page
+	mux.HandleFunc("/loginauth", loginAuthHandler)       // logging authentication page
 	// Artist endpoint creation
 
 	// Serving up files

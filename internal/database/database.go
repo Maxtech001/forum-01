@@ -11,7 +11,6 @@ const dbfile = "./db/forum.db"
 
 var Db *sql.DB
 
-
 func InitDb() {
 	// Setting up database
 	Db = DbOpen()

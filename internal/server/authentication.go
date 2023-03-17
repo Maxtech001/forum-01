@@ -4,10 +4,44 @@ import (
 	"fmt"
 	"net/http"
 
-	"01.kood.tech/git/kretesaak/forum/internal/registration"
 	"01.kood.tech/git/kretesaak/forum/internal/database"
+	"01.kood.tech/git/kretesaak/forum/internal/registration"
 )
 
+func loginAuthHandler(w http.ResponseWriter, r *http.Request) {
+	fmt.Println("*****loginAuthHandler running*****")
+
+	// Error handling with wrong path
+	if r.URL.Path != "/loginauth" {
+		http.Error(w, "Bad request - 404 resource not found.", http.StatusNotFound)
+		return
+	}
+
+	// Errpr handling wrong method
+	if r.Method != "POST" {
+		http.Error(w, "Bad request - 405 method not allowed.", http.StatusMethodNotAllowed)
+		return
+	}
+	r.ParseForm()
+
+	// Username criteria
+	username := r.FormValue("usernameIn")
+	fmt.Println("User logged in:", username)
+
+	// Password criteria
+	password := r.FormValue("passwordIn")
+	fmt.Println("Password used by user:", password)
+
+	// TODO checki kas sellinne username ja pass on baasis (hash) olemas ja saada ta õige puhul landing pagele oma eriliste kasutajaomadustega
+
+	// login connection
+	err := tmpl.ExecuteTemplate(w, "loginauth", nil)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+}
 
 func registerAuthHandler(w http.ResponseWriter, r *http.Request) {
 	fmt.Println("*****registerAuthHandler running*****")
@@ -59,7 +93,9 @@ func registerAuthHandler(w http.ResponseWriter, r *http.Request) {
 
 	var rf database.User
 
-	rf.Id = "sessionid" // TODO vist?
+	var uID string
+	rf.Id = uID // TODO vist?
+
 	rf.Name = username
 	rf.Email = email
 	rf.Password = password
@@ -73,21 +109,22 @@ func registerAuthHandler(w http.ResponseWriter, r *http.Request) {
 	fmt.Println(rslt)
 	fmt.Println("*****")
 
+	// Hashing test
+	hpass := database.HashPassword(rf.Password)
+	fmt.Println("Hash password:", hpass)
+	fmt.Println("Hash correct:", database.CheckPasswordHash(rf.Password, hpass))
+
 	/*
-	
-	// login connection
-	err := tmpl.ExecuteTemplate(w, "registerauth", nil)
-	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
-		return
-	}
+
+		// login connection
+		err := tmpl.ExecuteTemplate(w, "registerauth", nil)
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
 	*/
-
-
-
 
 	// TODO kui vorm on norm, siis ta peaks saatma registerAuth lehele vms, mis ütleb et kõik on norm ja kus on nupp mis suunab logimise lehele tagasi
 	// TODO Või siis kohe login page-le, kus üleval on template teade, et account created succesfully.
 
 }
-
