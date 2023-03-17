@@ -5,13 +5,16 @@ import (
 	"net/http"
 
 	"01.kood.tech/git/kretesaak/forum/internal/registration"
+	"01.kood.tech/git/kretesaak/forum/internal/database"
 )
 
+/*
 type RegistrationForm struct {
 	FormUsername string
 	FormEmail    string
 	FormPassword string
 }
+*/
 
 func registerAuthHandler(w http.ResponseWriter, r *http.Request) {
 	fmt.Println("*****registerAuthHandler running*****")
@@ -21,6 +24,8 @@ func registerAuthHandler(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "Bad request - 404 resource not found.", http.StatusNotFound)
 		return
 	}
+
+	// Errpr handling wrong method
 	if r.Method != "POST" {
 		http.Error(w, "Bad request - 405 method not allowed.", http.StatusMethodNotAllowed)
 		return
@@ -59,18 +64,33 @@ func registerAuthHandler(w http.ResponseWriter, r *http.Request) {
 		tmpl.ExecuteTemplate(w, "register", "Please check password criteria")
 	}
 
-	var rf RegistrationForm
+	var rf database.User
 
-	rf.FormUsername = username
-	rf.FormEmail = email
-	rf.FormPassword = password
+	rf.Id = "sessionid"
+	rf.Name = username
+	rf.Email = email
+	rf.Password = password
 
 	fmt.Println("-----")
 	fmt.Println(rf)
 	fmt.Println("-----")
 
 	// TODO checkid vastu baasi
+	rslt := database.DbGetUserByIdOrEmail(rf.Email)
+	fmt.Println(rslt)
+	fmt.Println("*****")
+
+	/*
 	
+	// login connection
+	err := tmpl.ExecuteTemplate(w, "registerauth", nil)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+	*/
+
+
 
 
 	// TODO kui vorm on norm, siis ta peaks saatma registerAuth lehele vms, mis ütleb et kõik on norm ja kus on nupp mis suunab logimise lehele tagasi

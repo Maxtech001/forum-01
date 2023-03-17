@@ -13,13 +13,19 @@ import (
 
 func main() {
 
+	database.InitDb()
+	/*
 	// Setting up database
-	db := database.DbOpen()
+	DB := database.DbOpen()
 
-	if db == nil {
+	if DB == nil {
 		fmt.Println("500")
 	}
-	defer db.Close()
+	defer DB.Close()
+	*/
+	defer database.Db.Close()
+
+	fmt.Println("Database open")
 
 	// Starting server
 	if len(os.Args) == 1 {

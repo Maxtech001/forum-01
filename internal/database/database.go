@@ -9,7 +9,13 @@ import (
 
 const dbfile = "./db/forum.db"
 
-var db *sql.DB
+var Db *sql.DB
+
+
+func InitDb() {
+	// Setting up database
+	Db = DbOpen()
+}
 
 // open database
 func DbOpen() *sql.DB {
@@ -22,8 +28,8 @@ func DbOpen() *sql.DB {
 }
 
 // insert new user
-func dbInsertUser(user User) error {
-	stmt, err := db.Prepare("INSERT INTO user(id, name, email, password) values(?, ?, ?, ?)")
+func DbInsertUser(user User) error {
+	stmt, err := Db.Prepare("INSERT INTO user(id, name, email, password) values(?, ?, ?, ?)")
 	if err != nil {
 		return err
 	}
@@ -40,9 +46,9 @@ func dbInsertUser(user User) error {
 }
 
 // check if user exists
-func dbGetUserByIdOrEmail(input string) []User {
+func DbGetUserByIdOrEmail(input string) []User {
 	var result []User
-	rows, err := db.Query("SELECT * FROM user WHERE id=? OR email=?", input, input)
+	rows, err := Db.Query("SELECT * FROM user WHERE id=? OR email=?", input, input)
 	if err != nil {
 		fmt.Println(err)
 		return result
@@ -62,11 +68,11 @@ func dbGetUserByIdOrEmail(input string) []User {
 }
 
 // authenticate by username and password
-func dbAuthenticateUser(input, pwd string) bool {
+func DbAuthenticateUser(input, pwd string) bool {
 	result := false
 	var user User
 
-	err := db.QueryRow("SELECT password FROM user WHERE id=?", input).Scan(&user.Password) //todo, use count(*) instead
+	err := Db.QueryRow("SELECT password FROM user WHERE id=?", input).Scan(&user.Password) //todo, use count(*) instead
 	if err != nil {
 		return result
 	}

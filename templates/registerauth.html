@@ -1,0 +1,23 @@
+{{define "registerauth"}}
+<!DOCTYPE html>
+<!-- Coding by CodingLab | www.codinglabweb.com-->
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <script>
+		// Redirect to the new page after 3 seconds
+		setTimeout(function() {
+			window.location.href = "/login";
+		}, 3000); // 3000 milliseconds = 3 seconds
+	</script>
+
+</head>
+<body>
+    <h1>Account succesfully created</h1>
+    <h2>You will be redirected in 3 seconds to login page</h2>
+</body>
+</html>
+{{ end }}
