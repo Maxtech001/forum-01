@@ -14,6 +14,13 @@ type Password struct {
 	Length    bool
 }
 
+const (
+	minUserLength = 6
+	maxUserLength = 20
+	minPswLength = 8
+	maxPswLength = 20
+)
+
 
 // Checking for alphanumeric characters in username
 func UsernameCorrect(u string) bool {
@@ -28,16 +35,14 @@ func UsernameCorrect(u string) bool {
 
 // Checking for username len
 func UsernameLen(u string) bool {
-
-	if 5 <= len(u) && len(u) <= 50 {
+	if minUserLength <= len(u) && len(u) <= maxUserLength {
 		return true
 	}
 	return false
-
 }
 
+// Password special conditions
 func PswdConditions(p string) Password {
-
 	var pw Password
 	for _, char := range p {
 		switch {
@@ -54,13 +59,13 @@ func PswdConditions(p string) Password {
 		}
 	}
 
-	if 11 < len(p) && len(p) < 60 {
+	if minPswLength <= len(p) && len(p) <= maxPswLength {
 		pw.Length = true
 	}
-
 	return pw
 }
 
+// Checking if email follows email standards
 func IsValidEmail(e string) bool {
 	emailRegex := regexp.MustCompile(`^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$`)
     return emailRegex.MatchString(e)

@@ -8,13 +8,6 @@ import (
 	"01.kood.tech/git/kretesaak/forum/internal/database"
 )
 
-/*
-type RegistrationForm struct {
-	FormUsername string
-	FormEmail    string
-	FormPassword string
-}
-*/
 
 func registerAuthHandler(w http.ResponseWriter, r *http.Request) {
 	fmt.Println("*****registerAuthHandler running*****")
