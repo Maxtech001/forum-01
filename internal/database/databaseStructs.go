@@ -9,7 +9,7 @@ type User struct {
 
 type Post struct {
 	Id       int
-	User_id  int
+	User_id  string
 	Title    string
 	Time     string
 	Content  string
@@ -36,4 +36,5 @@ type Tag struct {
 type Mainpage struct {
 	Username string
 	Posts    []Post
+	Tags     []Tag
 }
