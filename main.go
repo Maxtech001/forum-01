@@ -38,7 +38,7 @@ func main() {
 	fmt.Println("\nOpen http://localhost:" + server.Port + "/ in browser")
 	fmt.Println("\nCtrl + C to close server")
 
-	//database.TestDbStuff()
-	server.StartServer()
+	database.TestDbStuff()
+	//server.StartServer()
 
 }
