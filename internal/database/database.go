@@ -245,6 +245,38 @@ func DbGetUserByIdOrEmail(input string) []User {
 	return result
 }
 
+// check if user with email exist
+func DbEmailExist(input string) bool {
+	var usercount int
+
+	err := Db.QueryRow("SELECT count(*) FROM user WHERE email=?", input).Scan(&usercount)
+	if err != nil {
+		fmt.Println(err)
+		return false
+	}
+	if usercount == 0 {
+		return false
+	} else {
+		return true
+	}
+}
+
+// check if user with isername exist
+func DbUserIdExist(input string) bool {
+	var usercount int
+
+	err := Db.QueryRow("SELECT count(*) FROM user WHERE id=?", input).Scan(&usercount)
+	if err != nil {
+		fmt.Println(err)
+		return false
+	}
+	if usercount == 0 {
+		return false
+	} else {
+		return true
+	}
+}
+
 // authenticate by username and password
 func DbAuthenticateUser(email, pwd string) bool {
 	result := false
