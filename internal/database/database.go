@@ -35,7 +35,8 @@ func DbGetPosts() []Post {
 		"(select count(*) from feedback f where f.post_id=p.id and f.type = '+') likes, " +
 		"(select count(*) from feedback f where f.post_id=p.id and f.type = '-') dislikes, " +
 		"(select count(*) from comment c where c.post_id=p.id) comments " +
-		"from post p"
+		"from post p" +
+		"order by time desc"
 	rows, err := Db.Query(sql)
 	if err != nil {
 		fmt.Println(err)
