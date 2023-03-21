@@ -31,7 +31,12 @@ func DbOpen() *sql.DB {
 // get posts
 func DbGetPosts() []Post {
 	var result []Post
-	rows, err := Db.Query("select id, user_id, time, title, content, (select count(*) from feedback f where f.post_id=p.id and f.type = '+') likes, (select count(*) from feedback f where f.post_id=p.id and f.type = '-') dislikes from post p")
+	sql := "select id, user_id, time, title, content," +
+		"(select count(*) from feedback f where f.post_id=p.id and f.type = '+') likes," +
+		"(select count(*) from feedback f where f.post_id=p.id and f.type = '-') dislikes " +
+		"(select count(*) from comment c where c.post_id=p.id) comments " +
+		"from post p"
+	rows, err := Db.Query(sql)
 	if err != nil {
 		fmt.Println(err)
 		return result
@@ -40,12 +45,11 @@ func DbGetPosts() []Post {
 
 	for rows.Next() {
 		var post Post
-		err = rows.Scan(&post.Id, &post.User_id, &post.Time, &post.Title, &post.Content, &post.Likes, &post.Dislikes)
+		err = rows.Scan(&post.Id, &post.User_id, &post.Time, &post.Title, &post.Content, &post.Likes, &post.Dislikes, &post.Comments)
 		if err != nil {
 			fmt.Println(err)
 			return result
 		}
-		post.Comments = DbGetPostComments(post.Id)
 		post.Tags = DbGetPostTags(post.Id)
 		result = append(result, post)
 	}
@@ -56,7 +60,11 @@ func DbGetPosts() []Post {
 // get post comments
 func DbGetPostComments(post_id int) []Comment {
 	var result []Comment
-	rows, err := Db.Query("select id, user_id, time, content, (select count(*) from feedback f where f.comment_id=c.id and f.type = '+') likes, (select count(*) from feedback f where f.comment_id=c.id and f.type = '-') dislikes from comment c where c.post_id=?", post_id)
+	sql := "select id, user_id, time, content, " +
+		"(select count(*) from feedback f where f.comment_id=c.id and f.type = '+') likes," +
+		"(select count(*) from feedback f where f.comment_id=c.id and f.type = '-') dislikes " +
+		"from comment c where c.post_id=?"
+	rows, err := Db.Query(sql, post_id)
 	if err != nil {
 		fmt.Println(err)
 		return result
@@ -217,7 +225,7 @@ func DbInsertUser(user User) error {
 // check if user exists
 func DbGetUserByIdOrEmail(input string) []User {
 	var result []User
-	rows, err := Db.Query("SELECT * FROM user WHERE id=? OR email=?", input, input)
+	rows, err := Db.Query("SELECT id, name, email, password FROM user WHERE id=? OR email=?", input, input)
 	if err != nil {
 		fmt.Println(err)
 		return result
@@ -237,13 +245,13 @@ func DbGetUserByIdOrEmail(input string) []User {
 }
 
 // authenticate by username and password
-func DbAuthenticateUser(input, pwd string) bool {
+func DbAuthenticateUser(email, pwd string) bool {
 	result := false
-	var user User
+	var pw string
 
-	err := Db.QueryRow("SELECT password FROM user WHERE id=?", input).Scan(&user.Password) //todo, use count(*) instead
+	err := Db.QueryRow("SELECT password FROM user WHERE email=?", email).Scan(&pw) //todo, use count(*) instead
 	if err != nil {
 		return result
 	}
-	return CheckPasswordHash(pwd, user.Password)
+	return CheckPasswordHash(pwd, pw)
 }

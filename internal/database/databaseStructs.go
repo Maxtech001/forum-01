@@ -13,7 +13,7 @@ type Post struct {
 	Title    string
 	Time     string
 	Content  string
-	Comments []Comment
+	Comments int
 	Likes    int
 	Dislikes int
 	Tags     []Tag
@@ -34,7 +34,7 @@ type Tag struct {
 }
 
 type Mainpage struct {
-	Username string
-	Posts    []Post
-	Tags     []Tag
+	User_id string
+	Posts   []Post
+	Tags    []Tag
 }
