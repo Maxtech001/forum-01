@@ -5,10 +5,30 @@ import (
 	"net/http"
 
 	"github.com/gofrs/uuid"
+	"01.kood.tech/git/kretesaak/forum/internal/database"
 )
 
 // TODO andmebaasi konvertimine
 var dbSessions = map[string]string{}
+
+func createPostHandler(w http.ResponseWriter, r *http.Request) {
+	fmt.Println("*****createPostHandler running*****")
+
+	// Error handling with wrong path
+	if r.URL.Path != "/createpost" {
+		http.Error(w, "Bad request - 404 resource not found.", http.StatusNotFound)
+		return
+	}
+
+	tags := database.DbGetTags()
+
+	// login connection
+	err := tmpl.ExecuteTemplate(w, "createpost", tags)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+}
 
 func loginHandler(w http.ResponseWriter, r *http.Request) {
 	fmt.Println("*****loginHandler running*****")
@@ -19,7 +39,7 @@ func loginHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	// Wrong method handling
-	if r.Method != "GET"{
+	if r.Method != "GET" {
 		http.Error(w, "Bad request - 405 method not allowed.", http.StatusMethodNotAllowed)
 		return
 	}
@@ -53,7 +73,6 @@ func registerHandler(w http.ResponseWriter, r *http.Request) {
 	// TODO ilmselt kuidagi username põhiselt pärast logimise tegemist
 	////////////////////// Cookie generation
 	cookie, err := r.Cookie("session")
-
 	if err != nil {
 		// Creating a version 4 UUID
 		id, err2 := uuid.NewV4()
@@ -61,14 +80,14 @@ func registerHandler(w http.ResponseWriter, r *http.Request) {
 			fmt.Printf("failed to generate UUID: %v", err2)
 		}
 		fmt.Printf("generated Version 4 UUID %v", id)
-		
+
 		// TODO expiration, logout, clearing, specific sites (regamis ja login saitidel ilmselt kaob ära)
 		cookie = &http.Cookie{
-			Name: "session",
+			Name:  "session",
 			Value: id.String(),
 			// Secure: true
 			HttpOnly: true,
-			Path: "/",
+			Path:     "/",
 		}
 		http.SetCookie(w, cookie) // setting a cookie if it does not exist
 	}
@@ -76,27 +95,25 @@ func registerHandler(w http.ResponseWriter, r *http.Request) {
 	// TODO andmebaasi viia ja parssimine korda teha
 	// Getting the user and assigning cookie
 	/*
-	// if the user exists already, get the user
-	var u user
-	if un, ok := dbSessions[cookie.Value]; ok {
-		u = dbUsers[un] // user_id saab ülejäänud info kasutaja kohta kätte
-	}
+		// if the user exists already, get the user
+		var u user
+		if un, ok := dbSessions[cookie.Value]; ok {
+			u = dbUsers[un] // user_id saab ülejäänud info kasutaja kohta kätte
+		}
 
-	// Pärast logimist või authentication lehel määrata
-	if r.Method == http.MethodPost {
-		un := r.FormValue("username")
-		f := r.FormValue("firstname")
-		l := r.FormValue("lastname")
-		u = user{un, f, l}
-		dbSessions[cookie.Value] = un
-		dbUsers[un] = u
-	}
+		// Pärast logimist või authentication lehel määrata
+		if r.Method == http.MethodPost {
+			un := r.FormValue("username")
+			f := r.FormValue("firstname")
+			l := r.FormValue("lastname")
+			u = user{un, f, l}
+			dbSessions[cookie.Value] = un
+			dbUsers[un] = u
+		}
 	*/
 	// TODO ja siis template execution põhineb kasutaja structil, ilmselt kui puudub siis nil või muu leht
 	//err = tmpl.ExecuteTemplate(w, "index", u)
 	////////////////////// Cookie generation
-
-
 
 	// Register connection
 	err = tmpl.ExecuteTemplate(w, "register", nil)

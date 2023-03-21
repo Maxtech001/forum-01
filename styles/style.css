@@ -12,8 +12,6 @@ body {
 }
 
 body {
-    display: flex;
-    align-items: center;
     padding-top: 40px;
     padding-bottom: 40px;
     background-color: #F8F9FA;
@@ -52,6 +50,40 @@ body {
     order: 0;
     align-self: stretch;
     flex-grow: 0;
+}
+
+.post-form {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    padding: 60px;
+}
+
+.post-form-main {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    padding: 48px;
+    gap: 16px;
+}
+
+.post-form-fields {
+    display: flex;
+    flex-direction: column;
+    padding: 0px;
+    gap: 16px;
+    flex: none;
+    order: 0;
+    align-self: stretch;
+    flex-grow: 0;
+}
+
+.post-heading {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    padding: 48px 48px 0px;
+    gap: 8px;
 }
 
 .logo {
@@ -106,6 +138,8 @@ body {
 .text-muted {
     position: absolute;
     bottom: 10px;
+    width: 100%;
+    text-align: center;
 }
 
 .media-options a{

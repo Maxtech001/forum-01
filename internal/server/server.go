@@ -17,7 +17,6 @@ var (
 
 // Start the server
 func StartServer() {
-
 	tmpl = template.Must(template.ParseGlob("templates/*.html"))
 
 	fmt.Println("Templates:")
@@ -31,6 +30,7 @@ func StartServer() {
 	mux.HandleFunc("/registerauth", registerAuthHandler) // registration authentication page
 	mux.HandleFunc("/login", loginHandler)               // logging page
 	mux.HandleFunc("/loginauth", loginAuthHandler)       // logging authentication page
+	mux.HandleFunc("/createpost", createPostHandler)     // creating a post page
 	// Artist endpoint creation
 
 	// Serving up files
@@ -40,5 +40,4 @@ func StartServer() {
 	if err != nil {
 		log.Fatalf("Internal server error - %v", http.StatusInternalServerError)
 	}
-
 }
