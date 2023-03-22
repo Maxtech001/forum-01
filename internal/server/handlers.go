@@ -74,7 +74,8 @@ func registerHandler(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
-
+	
+}
 	/*
 	// TODO ilmselt kuidagi username põhiselt pärast logimise tegemist
 	////////////////////// Cookie generation
@@ -130,7 +131,7 @@ func registerHandler(w http.ResponseWriter, r *http.Request) {
 	}
 	*/
 
-}
+
 
 // Ilmselt sisselogimisel klõpsamine
 // Another page redirection, cookie otsimine
