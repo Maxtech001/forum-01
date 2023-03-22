@@ -207,7 +207,7 @@ func DbInsertPost(user_id int, title, content string, tags []int) error {
 
 // insert new user
 func DbInsertUser(user User) error {
-	stmt, err := Db.Prepare("INSERT INTO user(id, name, email, password) values(?, ?, ?, ?)")
+	stmt, err := Db.Prepare("INSERT INTO user(id, email, password) values(?, ?, ?)")
 	if err != nil {
 		return err
 	}
@@ -215,7 +215,7 @@ func DbInsertUser(user User) error {
 
 	pwd := HashPassword(user.Password)
 
-	_, err = stmt.Exec(user.Id, user.Name, user.Email, pwd)
+	_, err = stmt.Exec(user.Id, user.Email, pwd)
 	if err != nil {
 		return err
 
@@ -226,7 +226,7 @@ func DbInsertUser(user User) error {
 // check if user exists
 func DbGetUserByIdOrEmail(input string) []User {
 	var result []User
-	rows, err := Db.Query("SELECT id, name, email, password FROM user WHERE id=? OR email=?", input, input)
+	rows, err := Db.Query("SELECT id, email, password FROM user WHERE id=? OR email=?", input, input)
 	if err != nil {
 		fmt.Println(err)
 		return result
@@ -235,7 +235,7 @@ func DbGetUserByIdOrEmail(input string) []User {
 
 	for rows.Next() {
 		var user User
-		err = rows.Scan(&user.Id, &user.Name, &user.Email, &user.Password)
+		err = rows.Scan(&user.Id, &user.Email, &user.Password)
 		if err != nil {
 			fmt.Println(err)
 			return result
