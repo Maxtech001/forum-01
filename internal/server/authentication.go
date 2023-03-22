@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"net/http"
 
-	"01.kood.tech/git/kretesaak/forum/internal/database"
+	_"01.kood.tech/git/kretesaak/forum/internal/database"
 	"01.kood.tech/git/kretesaak/forum/internal/registration"
 )
 
@@ -91,6 +91,14 @@ func registerAuthHandler(w http.ResponseWriter, r *http.Request) {
 		tmpl.ExecuteTemplate(w, "register", "Please check password criteria")
 	}
 
+	// login connection
+	err := tmpl.ExecuteTemplate(w, "registerauth", nil)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	/*
 	var rf database.User
 
 	var uID string
@@ -113,6 +121,7 @@ func registerAuthHandler(w http.ResponseWriter, r *http.Request) {
 	hpass := database.HashPassword(rf.Password)
 	fmt.Println("Hash password:", hpass)
 	fmt.Println("Hash correct:", database.CheckPasswordHash(rf.Password, hpass))
+	*/
 
 	/*
 

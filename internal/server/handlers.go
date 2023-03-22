@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"net/http"
 
-	"github.com/gofrs/uuid"
+	_"github.com/gofrs/uuid"
 	"01.kood.tech/git/kretesaak/forum/internal/database"
 )
 
@@ -59,17 +59,23 @@ func registerHandler(w http.ResponseWriter, r *http.Request) {
 
 	// Error handling with wrong path
 	if r.URL.Path != "/register" {
-
 		http.Error(w, "Bad request - 404 resource not found.", http.StatusNotFound)
 		return
 	}
 	// Wrong method handling
 	if r.Method != "GET" {
-
 		http.Error(w, "Bad request - 405 method not allowed.", http.StatusMethodNotAllowed)
 		return
 	}
 
+	// Register connection
+	err := tmpl.ExecuteTemplate(w, "register", nil)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	/*
 	// TODO ilmselt kuidagi username põhiselt pärast logimise tegemist
 	////////////////////// Cookie generation
 	cookie, err := r.Cookie("session")
@@ -92,6 +98,7 @@ func registerHandler(w http.ResponseWriter, r *http.Request) {
 		http.SetCookie(w, cookie) // setting a cookie if it does not exist
 	}
 	fmt.Println(cookie)
+	*/
 	// TODO andmebaasi viia ja parssimine korda teha
 	// Getting the user and assigning cookie
 	/*
@@ -114,13 +121,15 @@ func registerHandler(w http.ResponseWriter, r *http.Request) {
 	// TODO ja siis template execution põhineb kasutaja structil, ilmselt kui puudub siis nil või muu leht
 	//err = tmpl.ExecuteTemplate(w, "index", u)
 	////////////////////// Cookie generation
-
+	/*
 	// Register connection
 	err = tmpl.ExecuteTemplate(w, "register", nil)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
+	*/
+
 }
 
 // Ilmselt sisselogimisel klõpsamine
