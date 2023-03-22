@@ -3,9 +3,10 @@ package server
 import (
 	"fmt"
 	"net/http"
+	"strconv"
 
-	_"github.com/gofrs/uuid"
 	"01.kood.tech/git/kretesaak/forum/internal/database"
+	_ "github.com/gofrs/uuid"
 )
 
 // TODO andmebaasi konvertimine
@@ -14,20 +15,48 @@ var dbSessions = map[string]string{}
 func createPostHandler(w http.ResponseWriter, r *http.Request) {
 	fmt.Println("*****createPostHandler running*****")
 
-	// Error handling with wrong path
-	if r.URL.Path != "/createpost" {
-		http.Error(w, "Bad request - 404 resource not found.", http.StatusNotFound)
+	if r.Method != "POST" {
+		// Error handling with wrong path
+		if r.URL.Path != "/createpost" {
+			http.Error(w, "Bad request - 404 resource not found.", http.StatusNotFound)
+			return
+		}
+
+		tags := database.DbGetTags()
+
+		// login connection
+		err := tmpl.ExecuteTemplate(w, "createpost", tags)
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
+	}
+
+	user_id := "ajutine" ///// puudu hetkel
+	title := r.FormValue("titleIn")
+	content := r.FormValue("contentIn")
+	r.ParseForm()
+	tags2 := r.Form["tag"]
+	var tags1 []int
+	for _, i := range tags2 {
+		j, err := strconv.Atoi(i)
+		if err != nil {
+			panic(err)
+		}
+		tags1 = append(tags1, j)
+	}
+
+	// Validate form data
+	if title == "" || content == "" {
+		http.Error(w, "Please fill in all fields", http.StatusBadRequest)
 		return
 	}
 
-	tags := database.DbGetTags()
+	database.DbInsertPost(user_id, title, content, tags1)
 
-	// login connection
-	err := tmpl.ExecuteTemplate(w, "createpost", tags)
-	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
-		return
-	}
+	// Redirect to success page
+	http.Redirect(w, r, "/", http.StatusSeeOther)
+
 }
 
 func loginHandler(w http.ResponseWriter, r *http.Request) {
@@ -74,9 +103,10 @@ func registerHandler(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
-	
+
 }
-	/*
+
+/*
 	// TODO ilmselt kuidagi username põhiselt pärast logimise tegemist
 	////////////////////// Cookie generation
 	cookie, err := r.Cookie("session")
@@ -99,39 +129,37 @@ func registerHandler(w http.ResponseWriter, r *http.Request) {
 		http.SetCookie(w, cookie) // setting a cookie if it does not exist
 	}
 	fmt.Println(cookie)
-	*/
-	// TODO andmebaasi viia ja parssimine korda teha
-	// Getting the user and assigning cookie
-	/*
-		// if the user exists already, get the user
-		var u user
-		if un, ok := dbSessions[cookie.Value]; ok {
-			u = dbUsers[un] // user_id saab ülejäänud info kasutaja kohta kätte
-		}
+*/
+// TODO andmebaasi viia ja parssimine korda teha
+// Getting the user and assigning cookie
+/*
+	// if the user exists already, get the user
+	var u user
+	if un, ok := dbSessions[cookie.Value]; ok {
+		u = dbUsers[un] // user_id saab ülejäänud info kasutaja kohta kätte
+	}
 
-		// Pärast logimist või authentication lehel määrata
-		if r.Method == http.MethodPost {
-			un := r.FormValue("username")
-			f := r.FormValue("firstname")
-			l := r.FormValue("lastname")
-			u = user{un, f, l}
-			dbSessions[cookie.Value] = un
-			dbUsers[un] = u
-		}
-	*/
-	// TODO ja siis template execution põhineb kasutaja structil, ilmselt kui puudub siis nil või muu leht
-	//err = tmpl.ExecuteTemplate(w, "index", u)
-	////////////////////// Cookie generation
-	/*
+	// Pärast logimist või authentication lehel määrata
+	if r.Method == http.MethodPost {
+		un := r.FormValue("username")
+		f := r.FormValue("firstname")
+		l := r.FormValue("lastname")
+		u = user{un, f, l}
+		dbSessions[cookie.Value] = un
+		dbUsers[un] = u
+	}
+*/
+// TODO ja siis template execution põhineb kasutaja structil, ilmselt kui puudub siis nil või muu leht
+//err = tmpl.ExecuteTemplate(w, "index", u)
+////////////////////// Cookie generation
+/*
 	// Register connection
 	err = tmpl.ExecuteTemplate(w, "register", nil)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
-	*/
-
-
+*/
 
 // Ilmselt sisselogimisel klõpsamine
 // Another page redirection, cookie otsimine

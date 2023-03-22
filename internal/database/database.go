@@ -164,7 +164,7 @@ func DbInsertComment(post_id int, user_id, content string) error {
 }
 
 // insert new post and its tags
-func DbInsertPost(user_id int, title, content string, tags []int) error {
+func DbInsertPost(user_id, title, content string, tags []int) error {
 	t := time.Now()
 	dbtime := t.Format("2006-01-02 15:04:05")
 	postq, err := Db.Prepare("INSERT INTO post(user_id, title, content, time) values(?, ?, ?, ?)")
