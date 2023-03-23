@@ -1,11 +1,11 @@
 package database
 
-import "fmt"
+// import "fmt"
 
 func TestDbStuff() {
-	fmt.Println(DbGetPosts())
+	// fmt.Println(DbGetPosts())
 	// add post
-	//DbInsertPost(user_id, title, content, tags)
+	// DbInsertPost(user_id, title, content, tags)
 
 	//add comment
 	//DbInsertComment(2, "user1", "OMG you're totally right!")
@@ -30,5 +30,4 @@ func TestDbStuff() {
 			//fmt.Println(dbAuthenticateUser("n00bh4ck3r", "qwerty"))
 			fmt.Println(dbAuthenticateUser("margusaid", "12345"))
 	*/
-
 }
