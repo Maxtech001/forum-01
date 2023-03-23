@@ -30,32 +30,32 @@ func createPostHandler(w http.ResponseWriter, r *http.Request) {
 			http.Error(w, err.Error(), http.StatusInternalServerError)
 			return
 		}
-	}
-
-	user_id := "ajutine" ///// puudu hetkel
-	title := r.FormValue("titleIn")
-	content := r.FormValue("contentIn")
-	r.ParseForm()
-	tags2 := r.Form["tag"]
-	var tags1 []int
-	for _, i := range tags2 {
-		j, err := strconv.Atoi(i)
-		if err != nil {
-			panic(err)
+	} else {
+		user_id := "ajutine" ///// puudu hetkel
+		title := r.FormValue("titleIn")
+		content := r.FormValue("contentIn")
+		r.ParseForm()
+		tags2 := r.Form["tag"]
+		var tags1 []int
+		for _, i := range tags2 {
+			j, err := strconv.Atoi(i)
+			if err != nil {
+				panic(err)
+			}
+			tags1 = append(tags1, j)
 		}
-		tags1 = append(tags1, j)
+
+		// Validate form data
+		if title == "" || content == "" {
+			http.Error(w, "Please fill in all fields", http.StatusBadRequest)
+			return
+		}
+
+		database.DbInsertPost(user_id, title, content, tags1)
+
+		// Redirect to success page
+		http.Redirect(w, r, "/", http.StatusSeeOther)
 	}
-
-	// Validate form data
-	if title == "" || content == "" {
-		http.Error(w, "Please fill in all fields", http.StatusBadRequest)
-		return
-	}
-
-	database.DbInsertPost(user_id, title, content, tags1)
-
-	// Redirect to success page
-	http.Redirect(w, r, "/", http.StatusSeeOther)
 
 }
 
