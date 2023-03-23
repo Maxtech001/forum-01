@@ -29,7 +29,7 @@ func DbOpen() *sql.DB {
 }
 
 // get posts
-func DbGetPosts() []Post {
+func DbGetPosts(userposts string, likedposts bool, tags []int) []Post {
 	var result []Post
 	sql := "select id, user_id, time, title, content, " +
 		"(select count(*) from feedback f where f.post_id=p.id and f.type = '+') likes, " +
