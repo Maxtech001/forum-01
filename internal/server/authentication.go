@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"net/http"
 
-	_"01.kood.tech/git/kretesaak/forum/internal/database"
+	"01.kood.tech/git/kretesaak/forum/internal/database"
 	"01.kood.tech/git/kretesaak/forum/internal/registration"
 )
 
@@ -25,12 +25,20 @@ func loginAuthHandler(w http.ResponseWriter, r *http.Request) {
 	r.ParseForm()
 
 	// Username criteria
-	username := r.FormValue("usernameIn")
-	fmt.Println("User logged in:", username)
+	email  := r.FormValue("emailIn")
+	fmt.Println("User logged in:", email)
 
 	// Password criteria
 	password := r.FormValue("passwordIn")
 	fmt.Println("Password used by user:", password)
+
+	cp := database.DbAuthenticateUser(email, password)
+
+	// TODO või siis email või password on vale
+	if !cp {
+		http.Error(w, "Forbidden", http.StatusForbidden)
+		return
+	}
 
 	// TODO checki kas sellinne username ja pass on baasis (hash) olemas ja saada ta õige puhul landing pagele oma eriliste kasutajaomadustega
 
