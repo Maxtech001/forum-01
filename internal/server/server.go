@@ -31,6 +31,7 @@ func StartServer() {
 	mux.HandleFunc("/login", loginHandler)               // logging page
 	mux.HandleFunc("/loginauth", loginAuthHandler)       // logging authentication page
 	mux.HandleFunc("/createpost", createPostHandler)     // creating a post page
+	mux.HandleFunc("/", mainPageHandler)                 //main page handler
 	// Artist endpoint creation
 
 	// Serving up files

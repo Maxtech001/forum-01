@@ -29,13 +29,13 @@ func DbOpen() *sql.DB {
 }
 
 // get posts
-func DbGetPosts(userposts string, likedposts bool, tags []int) []Post {
+func DbGetPosts() []Post {
 	var result []Post
 	sql := "select id, user_id, time, title, content, " +
 		"(select count(*) from feedback f where f.post_id=p.id and f.type = '+') likes, " +
 		"(select count(*) from feedback f where f.post_id=p.id and f.type = '-') dislikes, " +
 		"(select count(*) from comment c where c.post_id=p.id) comments " +
-		"from post p" +
+		"from post p " +
 		"order by time desc"
 	rows, err := Db.Query(sql)
 	if err != nil {

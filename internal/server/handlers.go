@@ -12,6 +12,28 @@ import (
 // TODO andmebaasi konvertimine
 var dbSessions = map[string]string{}
 
+func mainPageHandler(w http.ResponseWriter, r *http.Request) {
+	// Error handling with wrong path
+	if r.URL.Path != "/" {
+		http.Error(w, "Bad request - 404 resource not found.", http.StatusNotFound)
+		return
+	}
+	// Wrong method handling
+	if r.Method != "GET" {
+		http.Error(w, "Bad request - 405 method not allowed.", http.StatusMethodNotAllowed)
+		return
+	}
+
+	posts := database.DbGetPosts()
+
+	err := tmpl.ExecuteTemplate(w, "index", posts)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+}
+
 func createPostHandler(w http.ResponseWriter, r *http.Request) {
 	fmt.Println("*****createPostHandler running*****")
 

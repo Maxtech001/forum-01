@@ -19,8 +19,14 @@
     <h3>Here is your data:</h3>
     {{ range . }}
     <p>{{ .User_id }}</p>
-    <p>{{ .Post }}</p>
-    <p>{{ .Tags }}</p>
+    <p>{{ .Title }}</p>
+    <p>{{ .Time }}</p>
+    <p>comments:{{ .Comments }}</p>
+    <p>likes:{{ .Likes }}</p>
+    <p>dislikes:{{ .Dislikes}}</p>
+    {{ range .Tags }}
+    <p>{{ .Name }}</p>
+    {{ end }}
     {{ end }}
 </body>
 </html>
