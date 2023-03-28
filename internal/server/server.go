@@ -36,9 +36,7 @@ func StartServer() {
 	mux.HandleFunc("/createpost", createPostHandler)     // creating a post page
 	mux.HandleFunc("/", mainPageHandler)                 //main page handler
 	for i := range database.DbGetPosts() {
-		fmt.Print(i)
 		path := "/" + strconv.Itoa(i)
-		fmt.Print(path)
 		index := i
 		mux.HandleFunc(path, func(w http.ResponseWriter, r *http.Request) {
 			postHandler(w, r, path, index)

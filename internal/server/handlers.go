@@ -48,7 +48,6 @@ func postHandler(w http.ResponseWriter, r *http.Request, s string, i int) {
 
 	posts := database.DbGetPosts()
 
-	fmt.Print(posts)
 	err := tmpl.ExecuteTemplate(w, "post", posts[i])
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
