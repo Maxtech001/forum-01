@@ -7,15 +7,16 @@ type User struct {
 }
 
 type Post struct {
-	Id       int
-	User_id  string
-	Title    string
-	Time     string
-	Content  string
-	Comments int
-	Likes    int
-	Dislikes int
-	Tags     []Tag
+	Id            int
+	User_id       string
+	Title         string
+	Time          string
+	Content       string
+	Comments      int
+	Likes         int
+	Dislikes      int
+	Tags          []Tag
+	Commentstruct []Comment
 }
 
 type Comment struct {

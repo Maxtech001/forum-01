@@ -34,6 +34,29 @@ func mainPageHandler(w http.ResponseWriter, r *http.Request) {
 
 }
 
+func postHandler(w http.ResponseWriter, r *http.Request, s string, i int) {
+	// Error handling with wrong path
+	if r.URL.Path != s {
+		http.Error(w, "Bad request - 404 resource not found.", http.StatusNotFound)
+		return
+	}
+	// Wrong method handling
+	if r.Method != "GET" {
+		http.Error(w, "Bad request - 405 method not allowed.", http.StatusMethodNotAllowed)
+		return
+	}
+
+	posts := database.DbGetPosts()
+
+	fmt.Print(posts)
+	err := tmpl.ExecuteTemplate(w, "post", posts[i])
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+}
+
 func createPostHandler(w http.ResponseWriter, r *http.Request) {
 	fmt.Println("*****createPostHandler running*****")
 

@@ -51,6 +51,7 @@ func DbGetPosts() []Post {
 			fmt.Println(err)
 			return result
 		}
+		post.Commentstruct = DbGetPostComments(post.Id)
 		post.Tags = DbGetPostTags(post.Id)
 		result = append(result, post)
 	}
