@@ -24,14 +24,16 @@ func mainPageHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	posts := database.DbGetPosts()
+	var mainPageContent database.Mainpage
+	mainPageContent.User_id = "ajutine"
+	mainPageContent.Posts = database.DbGetPosts()
+	mainPageContent.Tags = database.DbGetTags()
 
-	err := tmpl.ExecuteTemplate(w, "index", posts)
+	err := tmpl.ExecuteTemplate(w, "index", mainPageContent)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
-
 }
 
 func postHandler(w http.ResponseWriter, r *http.Request, s string, i int) {
@@ -53,7 +55,6 @@ func postHandler(w http.ResponseWriter, r *http.Request, s string, i int) {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
-
 }
 
 func createPostHandler(w http.ResponseWriter, r *http.Request) {
@@ -100,7 +101,6 @@ func createPostHandler(w http.ResponseWriter, r *http.Request) {
 		// Redirect to success page
 		http.Redirect(w, r, "/", http.StatusSeeOther)
 	}
-
 }
 
 func loginHandler(w http.ResponseWriter, r *http.Request) {
@@ -147,7 +147,6 @@ func registerHandler(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
-
 }
 
 /*
