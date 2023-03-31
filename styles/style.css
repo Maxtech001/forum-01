@@ -22,7 +22,6 @@ body {
     max-width: 414px;
     padding: 40px 0px 0px 0px;
     gap: 8px;
-    ;
 }
 
 .form-main {
@@ -178,6 +177,25 @@ body {
 
 .navbar-brand:hover {
     color: #0D1C5C;
+}
+
+.banner-image {
+    background-image: url(banner.jpg);
+    height: 380px;
+    background-position: 50% 70%;
+    background-repeat: no-repeat;
+    background-size: cover;
+    position: relative;
+}
+
+.banner-text h1 {
+    font-family: 'Beau Rivage';
+    font-style: normal;
+    line-height: 115px;
+    color: #F8F9FA;
+    font-weight: 400;
+    font-size: 78px;
+    letter-spacing: 0.144px;
 }
 
 .media-options a {

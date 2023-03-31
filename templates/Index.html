@@ -47,7 +47,17 @@
         </div>
     </nav>
 
-    <main>
+    <main class="container">
+        <div class="col-xxl">
+            <div class="banner-image">
+                <div class="row h-100 text-center">
+                    <div class="col"></div>
+                    <div class="col banner-text m-auto">
+                        <h1>Everything about knitting!</h1>
+                    </div>
+                </div>
+            </div>
+        </div>
         <h3>Here is your data:</h3>
         {{ range . }}
         <p>{{ .User_id }}</p>
