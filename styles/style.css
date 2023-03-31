@@ -173,7 +173,9 @@ body {
 .navbar-brand:hover {
     color: #0D1C5C;
 }
-
+.banner {
+    --bs-gutter-x: 0;
+}
 .banner-image {
     background-image: url(banner.jpg);
     height: 380px;
@@ -181,6 +183,7 @@ body {
     background-repeat: no-repeat;
     background-size: cover;
     position: relative;
+    --bs-gutter-x: 0;
 }
 
 .banner-text h1 {
