@@ -110,11 +110,13 @@
                         <div class="post-footer">
                             <div class="post-info">
                                 <p>
-                                    by {{ .User_id }} | {{ .Time }} | Tags:
+                                    by {{ .User_id }} | {{ formatTime .Time }} | Tags:
                                 </p>
+                                {{ range .Tags }}
                                 <div class="tag-bubble">
-                                    Techniques
+                                    {{ .Name }}
                                 </div>
+                                {{ end }}
                             </div>
                             <div class="post-feedback">
                                 <div class="feedback-item">

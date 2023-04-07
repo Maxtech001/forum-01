@@ -17,7 +17,11 @@ var (
 
 // Start the server
 func StartServer() {
-	tmpl = template.Must(template.ParseGlob("templates/*.html"))
+	//tmpl = template.Must(template.ParseGlob("templates/*.html"))
+	// Templating with custom time-helper function
+	tmpl = template.Must(template.New("").Funcs(template.FuncMap{
+		"formatTime": formatTime,
+	}).ParseGlob("templates/*.html"))
 
 	// Serving up the result with mux
 	mux = http.NewServeMux()

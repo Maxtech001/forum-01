@@ -36,11 +36,14 @@ func mainPageHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// TODO new init-ga ilmselt parem
-	var mainPageContent database.Mainpage
-	mainPageContent.User_id = user_id
-	mainPageContent.Posts = database.DbGetPosts()
-	mainPageContent.Tags = database.DbGetTags()
+	// Getting content
+	mainPageContent := getMainPageContent(user_id)
+	/*
+		var mainPageContent database.Mainpage
+		mainPageContent.User_id = user_id
+		mainPageContent.Posts = database.DbGetPosts()
+		mainPageContent.Tags = database.DbGetTags()
+	*/
 
 	err := tmpl.ExecuteTemplate(w, "index", mainPageContent)
 	if err != nil {
