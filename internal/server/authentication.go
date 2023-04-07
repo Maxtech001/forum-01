@@ -6,6 +6,7 @@ import (
 
 	"01.kood.tech/git/kretesaak/forum/internal/database"
 	"01.kood.tech/git/kretesaak/forum/internal/registration"
+	"github.com/gofrs/uuid"
 )
 
 func loginAuthHandler(w http.ResponseWriter, r *http.Request) {
@@ -25,7 +26,7 @@ func loginAuthHandler(w http.ResponseWriter, r *http.Request) {
 	r.ParseForm()
 
 	// Username criteria
-	email  := r.FormValue("emailIn")
+	email := r.FormValue("emailIn")
 	fmt.Println("User logged in:", email)
 
 	// Password criteria
@@ -42,13 +43,35 @@ func loginAuthHandler(w http.ResponseWriter, r *http.Request) {
 
 	// TODO checki kas sellinne username ja pass on baasis (hash) olemas ja saada ta õige puhul landing pagele oma eriliste kasutajaomadustega
 
+	cookie, err := r.Cookie("session")
+	fmt.Println("Cookie get:", cookie)
+	if err != nil {
+		// Creating a version 4 UUID
+		id, err2 := uuid.NewV4()
+		if err2 != nil {
+			fmt.Printf("failed to generate UUID: %v", err2)
+		}
+		fmt.Printf("generated Version 4 UUID %v", id)
+
+		// TODO expiration, logout, clearing, specific sites (regamis ja login saitidel ilmselt kaob ära)
+		cookie = &http.Cookie{
+			Name:  "session",
+			Value: id.String(),
+			// Secure: true
+			HttpOnly: true,
+			Path:     "/",
+		}
+		http.SetCookie(w, cookie) // setting a cookie if it does not exist
+		fmt.Println("Cookie set:", cookie)
+		database.DbAddCookie(cookie.Value)
+	}
+
 	// login connection
-	err := tmpl.ExecuteTemplate(w, "loginauth", nil)
+	err = tmpl.ExecuteTemplate(w, "loginauth", nil)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
-
 }
 
 func logoutHandler(w http.ResponseWriter, r *http.Request) {
@@ -66,7 +89,15 @@ func logoutHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	database.User_id = ""
+	fmt.Println("1")
+	cookie, _ := r.Cookie("session")
+	fmt.Println("2")
+	database.DbDeleteCookie(cookie.Value)
+	fmt.Println("3")
+	cookie.MaxAge = -1
+	fmt.Println("4")
+	http.SetCookie(w, cookie)
+
 	// login connection
 	err := tmpl.ExecuteTemplate(w, "logout", nil)
 	if err != nil {
@@ -74,7 +105,6 @@ func logoutHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 }
-
 
 func registerAuthHandler(w http.ResponseWriter, r *http.Request) {
 	fmt.Println("*****registerAuthHandler running*****")
@@ -114,9 +144,9 @@ func registerAuthHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	// Password criteria
-//	if !pwc.Lowercase || !pwc.Uppercase || !pwc.Number || !pwc.Special || !pwc.Length || pwc.NoSpaces {
-		if !pwc.Lowercase || !pwc.Uppercase || !pwc.Number || !pwc.Length || pwc.NoSpaces {
-			fmt.Println("Password has missing criteria")
+	//	if !pwc.Lowercase || !pwc.Uppercase || !pwc.Number || !pwc.Special || !pwc.Length || pwc.NoSpaces {
+	if !pwc.Lowercase || !pwc.Uppercase || !pwc.Number || !pwc.Length || pwc.NoSpaces {
+		fmt.Println("Password has missing criteria")
 		tmpl.ExecuteTemplate(w, "register", "Please check password criteria")
 		return
 	}

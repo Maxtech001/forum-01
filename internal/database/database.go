@@ -30,6 +30,39 @@ func DbOpen() *sql.DB {
 	return Db
 }
 
+func DbGetUserByCookie(cookie string) string {
+	fmt.Println("DbGetUserByCookie input:", cookie)
+
+	if cookie == "" {
+		return ""
+	}
+	var user string
+	err := Db.QueryRow("SELECT user_id FROM session WHERE id=?", cookie).Scan(&user)
+	if err != nil {
+		return ""
+	}
+	return user
+}
+
+func DbDeleteCookie(cookie string) {
+	fmt.Println("Going to delete cookie:", cookie)
+	dbq, _ := Db.Prepare("DELETE FROM session WHERE id = ?")
+
+	defer dbq.Close()
+	dbq.Exec(cookie)
+}
+
+func DbAddCookie(cookie string) {
+	if User_id == "" {
+		fmt.Println("user_id missing, can't set cookie")
+	}
+	fmt.Println("Going to add cookie for:", User_id, cookie)
+	dbq, _ := Db.Prepare("INSERT INTO session(id, user_id) values (?, ?)")
+
+	defer dbq.Close()
+	dbq.Exec(cookie, User_id)
+}
+
 // get single post
 func DbGetSinglePost(post_id int) Post {
 	var result Post
@@ -330,4 +363,3 @@ func DbAuthenticateUser(email, pwd string) bool {
 
 	return result
 }
-

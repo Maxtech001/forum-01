@@ -16,7 +16,7 @@ import (
 var (
 	Port = "8080" // default port
 	tmpl *template.Template
-	//Mux *http.ServeMux
+	mux  *http.ServeMux
 )
 
 // Start the server
@@ -29,7 +29,7 @@ func StartServer() {
 	}
 
 	// Serving up the result with mux
-	mux := http.NewServeMux()
+	mux = http.NewServeMux()
 	mux.HandleFunc("/register", registerHandler)         // registration page
 	mux.HandleFunc("/registerauth", registerAuthHandler) // registration authentication page
 	mux.HandleFunc("/login", loginHandler)               // logging page
@@ -39,7 +39,7 @@ func StartServer() {
 	mux.HandleFunc("/", mainPageHandler)                 // main page handler
 	for i := range database.DbGetPosts() {
 		path := "/post/" + strconv.Itoa(i+1)
-		index := i+1
+		index := i + 1
 		mux.HandleFunc(path, func(w http.ResponseWriter, r *http.Request) {
 			postHandler(w, r, path, index)
 		})

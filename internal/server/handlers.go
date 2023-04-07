@@ -12,7 +12,21 @@ import (
 // TODO andmebaasi konvertimine
 var dbSessions = map[string]string{}
 
+func getUserByCookie(r *http.Request) string {
+	result := ""
+	cookie, err := r.Cookie("session")
+	if err != nil {
+		return result
+	}
+	fmt.Println("getUserByCookie DB request", cookie.Value)
+	result = database.DbGetUserByCookie(cookie.Value)
+	fmt.Println("getUserByCookie result:", result)
+	return result
+}
+
 func mainPageHandler(w http.ResponseWriter, r *http.Request) {
+	user_id := getUserByCookie(r)
+
 	// Error handling with wrong path
 	if r.URL.Path != "/" {
 		http.Error(w, "Bad request - 404 resource not found.", http.StatusNotFound)
@@ -25,7 +39,7 @@ func mainPageHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	var mainPageContent database.Mainpage
-	mainPageContent.User_id = database.User_id
+	mainPageContent.User_id = user_id
 	mainPageContent.Posts = database.DbGetPosts()
 	mainPageContent.Tags = database.DbGetTags()
 
@@ -77,7 +91,7 @@ func createPostHandler(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 	} else {
-		user_id := database.User_id ///// puudu hetkel
+		user_id := getUserByCookie(r)
 		title := r.FormValue("titleIn")
 		content := r.FormValue("contentIn")
 		r.ParseForm()
@@ -103,17 +117,12 @@ func createPostHandler(w http.ResponseWriter, r *http.Request) {
 		} else {
 			fmt.Println("DbInsertpost Success:", post_id)
 		}
+
 		path := "/post/" + strconv.Itoa(post_id)
-		http.HandleFunc(path, func(w http.ResponseWriter, r *http.Request) {
+		fmt.Println(path)
+		mux.HandleFunc(path, func(w http.ResponseWriter, r *http.Request) {
 			postHandler(w, r, path, post_id)
 		})
-		//r := Mux.NewServeMux()
-		/*
-			path := "/post/" + strconv.Itoa(post_id)
-			Mux.HandleFunc(path, func(w http.ResponseWriter, r *http.Request) {
-				postHandler(w, r, path, post_id)
-			})
-		*/
 		// Redirect to success page
 		http.Redirect(w, r, "/", http.StatusSeeOther)
 	}
