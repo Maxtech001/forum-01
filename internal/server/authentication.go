@@ -33,15 +33,13 @@ func loginAuthHandler(w http.ResponseWriter, r *http.Request) {
 	password := r.FormValue("passwordIn")
 	fmt.Println("Password used by user:", password)
 
-	cp := database.DbAuthenticateUser(email, password)
+	cp, user_id := database.DbAuthenticateUser(email, password)
 
 	// TODO või siis email või password on vale
 	if !cp {
 		http.Error(w, "Forbidden", http.StatusForbidden)
 		return
 	}
-
-	// TODO checki kas sellinne username ja pass on baasis (hash) olemas ja saada ta õige puhul landing pagele oma eriliste kasutajaomadustega
 
 	cookie, err := r.Cookie("session")
 	fmt.Println("Cookie get:", cookie)
@@ -53,7 +51,7 @@ func loginAuthHandler(w http.ResponseWriter, r *http.Request) {
 		}
 		fmt.Printf("generated Version 4 UUID %v", id)
 
-		// TODO expiration, logout, clearing, specific sites (regamis ja login saitidel ilmselt kaob ära)
+		// TODO expiration
 		cookie = &http.Cookie{
 			Name:  "session",
 			Value: id.String(),
@@ -63,7 +61,7 @@ func loginAuthHandler(w http.ResponseWriter, r *http.Request) {
 		}
 		http.SetCookie(w, cookie) // setting a cookie if it does not exist
 		fmt.Println("Cookie set:", cookie)
-		database.DbAddCookie(cookie.Value)
+		database.DbAddCookie(cookie.Value, user_id)
 	}
 
 	// login connection
@@ -89,13 +87,9 @@ func logoutHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	fmt.Println("1")
 	cookie, _ := r.Cookie("session")
-	fmt.Println("2")
 	database.DbDeleteCookie(cookie.Value)
-	fmt.Println("3")
 	cookie.MaxAge = -1
-	fmt.Println("4")
 	http.SetCookie(w, cookie)
 
 	// login connection

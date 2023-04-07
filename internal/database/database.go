@@ -13,8 +13,6 @@ const dbfile = "./db/forum.db"
 
 var Db *sql.DB
 
-var User_id = ""
-
 func InitDb() {
 	// Setting up database
 	Db = DbOpen()
@@ -52,15 +50,15 @@ func DbDeleteCookie(cookie string) {
 	dbq.Exec(cookie)
 }
 
-func DbAddCookie(cookie string) {
-	if User_id == "" {
+func DbAddCookie(cookie, user_id string) {
+	if user_id == "" {
 		fmt.Println("user_id missing, can't set cookie")
 	}
-	fmt.Println("Going to add cookie for:", User_id, cookie)
+	fmt.Println("Going to add cookie for:", user_id, cookie)
 	dbq, _ := Db.Prepare("INSERT INTO session(id, user_id) values (?, ?)")
 
 	defer dbq.Close()
-	dbq.Exec(cookie, User_id)
+	dbq.Exec(cookie, user_id)
 }
 
 // get single post
@@ -344,22 +342,20 @@ func DbUserIdExist(input string) bool {
 	}
 }
 
-func DbAuthenticateUser(email, pwd string) bool {
+func DbAuthenticateUser(email, pwd string) (bool, string) {
 	result := false
 	var user, pw string
 
 	err := Db.QueryRow("SELECT id, password FROM user WHERE email=?", email).Scan(&user, &pw)
 	if err != nil {
-		return result
+		return result, ""
 	}
 
 	if CheckPasswordHash(pwd, pw) {
-		User_id = user
 		result = true
 	} else {
-		User_id = ""
 		result = false
 	}
 
-	return result
+	return result, user
 }
