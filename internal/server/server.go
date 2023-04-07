@@ -8,9 +8,6 @@ import (
 	"html/template"
 	"log"
 	"net/http"
-	"strconv"
-
-	"01.kood.tech/git/kretesaak/forum/internal/database"
 )
 
 var (
@@ -37,13 +34,12 @@ func StartServer() {
 	mux.HandleFunc("/createpost", createPostHandler)     // creating a post page
 	mux.HandleFunc("/logout", logoutHandler)             // logout handler
 	mux.HandleFunc("/", mainPageHandler)                 // main page handler
-	for i := range database.DbGetPosts() {
-		path := "/post/" + strconv.Itoa(i+1)
-		index := i + 1
-		mux.HandleFunc(path, func(w http.ResponseWriter, r *http.Request) {
-			postHandler(w, r, path, index)
-		})
-	}
+
+	// Post handling
+	mux.HandleFunc("/post/", func(w http.ResponseWriter, r *http.Request) {
+		postHandler(w, r)
+	})
+
 	// Artist endpoint creation
 
 	// Serving up files

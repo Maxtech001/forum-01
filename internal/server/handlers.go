@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"net/http"
 	"strconv"
+	"strings"
 
 	"01.kood.tech/git/kretesaak/forum/internal/database"
 	_ "github.com/gofrs/uuid"
@@ -38,6 +39,7 @@ func mainPageHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	// TODO new init-ga ilmselt parem
 	var mainPageContent database.Mainpage
 	mainPageContent.User_id = user_id
 	mainPageContent.Posts = database.DbGetPosts()
@@ -50,22 +52,32 @@ func mainPageHandler(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-func postHandler(w http.ResponseWriter, r *http.Request, s string, i int) {
-	// Error handling with wrong path
-	fmt.Println(s)
-	if r.URL.Path != s {
-		http.Error(w, "Bad request - 404 resource not found.", http.StatusNotFound)
-		return
-	}
+func postHandler(w http.ResponseWriter, r *http.Request) {
+	fmt.Println("*****postHandler running*****")
+
 	// Wrong method handling
 	if r.Method != "GET" {
-		http.Error(w, "Bad request - 405 method not allowed.", http.StatusMethodNotAllowed)
+		http.Error(w, "Bad request - method not allowed.", http.StatusMethodNotAllowed)
 		return
 	}
 
-	post := database.DbGetSinglePost(i)
+	// Extract post ID from URL
+	postID, err := strconv.Atoi(strings.TrimPrefix(r.URL.Path, "/post/"))
+	if err != nil {
+		http.Error(w, "Bad request - invalid post ID.", http.StatusBadRequest)
+		return
+	}
 
-	err := tmpl.ExecuteTemplate(w, "post", post)
+	// Get post from database
+	post := database.DbGetSinglePost(postID)
+	// If missing
+	if post.Id == 0 {
+		http.Error(w, "Bad request - post not found.", http.StatusNotFound)
+		return
+	}
+
+	// Render post template
+	err = tmpl.ExecuteTemplate(w, "post", post)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
@@ -121,7 +133,7 @@ func createPostHandler(w http.ResponseWriter, r *http.Request) {
 		path := "/post/" + strconv.Itoa(post_id)
 		fmt.Println(path)
 		mux.HandleFunc(path, func(w http.ResponseWriter, r *http.Request) {
-			postHandler(w, r, path, post_id)
+			postHandler(w, r)
 		})
 		// Redirect to success page
 		http.Redirect(w, r, "/", http.StatusSeeOther)
