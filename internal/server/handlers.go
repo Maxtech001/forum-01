@@ -10,9 +10,6 @@ import (
 	_ "github.com/gofrs/uuid"
 )
 
-// TODO andmebaasi konvertimine
-var dbSessions = map[string]string{}
-
 func getUserByCookie(r *http.Request) string {
 	result := ""
 	cookie, err := r.Cookie("session")
@@ -185,5 +182,3 @@ func registerHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 }
-
-
