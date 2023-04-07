@@ -40,8 +40,6 @@ func StartServer() {
 		postHandler(w, r)
 	})
 
-	// Artist endpoint creation
-
 	// Serving up files
 	mux.Handle("/styles/", http.StripPrefix("/styles/", http.FileServer(http.Dir("./styles/")))) // css serving
 	mux.Handle("/js/", http.StripPrefix("/js/", http.FileServer(http.Dir("./js/"))))             // js serving
