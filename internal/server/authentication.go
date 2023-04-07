@@ -112,6 +112,9 @@ func registerAuthHandler(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "Bad request - 405 method not allowed.", http.StatusMethodNotAllowed)
 		return
 	}
+	/*
+		Front-end lookup
+	*/
 	r.ParseForm()
 	// Username criteria
 	username := r.FormValue("usernameUp")
@@ -147,13 +150,9 @@ func registerAuthHandler(w http.ResponseWriter, r *http.Request) {
 	/*
 		Database lookup
 	*/
-	var rf database.User
-	rf.Id = username
-	rf.Email = email
-	rf.Password = password
-	fmt.Println("-----")
-	fmt.Println(rf)
-	fmt.Println("-----")
+
+	rf := registration.NewUser(username, email, password)
+
 	// Checking email and username
 	ux := database.DbUserIdExist(rf.Id)
 	fmt.Println("Is username:", ux)
