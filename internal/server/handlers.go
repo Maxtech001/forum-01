@@ -25,7 +25,7 @@ func mainPageHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	var mainPageContent database.Mainpage
-	mainPageContent.User_id = "ajutine"
+	mainPageContent.User_id = database.User_id
 	mainPageContent.Posts = database.DbGetPosts()
 	mainPageContent.Tags = database.DbGetTags()
 
@@ -38,6 +38,7 @@ func mainPageHandler(w http.ResponseWriter, r *http.Request) {
 
 func postHandler(w http.ResponseWriter, r *http.Request, s string, i int) {
 	// Error handling with wrong path
+	fmt.Println(s)
 	if r.URL.Path != s {
 		http.Error(w, "Bad request - 404 resource not found.", http.StatusNotFound)
 		return
@@ -48,9 +49,9 @@ func postHandler(w http.ResponseWriter, r *http.Request, s string, i int) {
 		return
 	}
 
-	posts := database.DbGetPosts()
+	post := database.DbGetSinglePost(i)
 
-	err := tmpl.ExecuteTemplate(w, "post", posts[i])
+	err := tmpl.ExecuteTemplate(w, "post", post)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
@@ -76,7 +77,7 @@ func createPostHandler(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 	} else {
-		user_id := "ajutine" ///// puudu hetkel
+		user_id := database.User_id ///// puudu hetkel
 		title := r.FormValue("titleIn")
 		content := r.FormValue("contentIn")
 		r.ParseForm()
@@ -96,8 +97,23 @@ func createPostHandler(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 
-		database.DbInsertPost(user_id, title, content, tags1)
-
+		err, post_id := database.DbInsertPost(user_id, title, content, tags1)
+		if err != nil {
+			fmt.Println("DbInsertpost Error")
+		} else {
+			fmt.Println("DbInsertpost Success:", post_id)
+		}
+		path := "/post/" + strconv.Itoa(post_id)
+		http.HandleFunc(path, func(w http.ResponseWriter, r *http.Request) {
+			postHandler(w, r, path, post_id)
+		})
+		//r := Mux.NewServeMux()
+		/*
+			path := "/post/" + strconv.Itoa(post_id)
+			Mux.HandleFunc(path, func(w http.ResponseWriter, r *http.Request) {
+				postHandler(w, r, path, post_id)
+			})
+		*/
 		// Redirect to success page
 		http.Redirect(w, r, "/", http.StatusSeeOther)
 	}

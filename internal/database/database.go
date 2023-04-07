@@ -13,6 +13,8 @@ const dbfile = "./db/forum.db"
 
 var Db *sql.DB
 
+var User_id = ""
+
 func InitDb() {
 	// Setting up database
 	Db = DbOpen()
@@ -26,6 +28,37 @@ func DbOpen() *sql.DB {
 		return nil
 	}
 	return Db
+}
+
+// get single post
+func DbGetSinglePost(post_id int) Post {
+	var result Post
+	sql := "select id, user_id, time, title, content, " +
+		"(select count(*) from feedback f where f.post_id=p.id and f.type = '+') likes, " +
+		"(select count(*) from feedback f where f.post_id=p.id and f.type = '-') dislikes, " +
+		"(select count(*) from comment c where c.post_id=p.id) comments " +
+		"from post p " +
+		"where id =?"
+	rows, err := Db.Query(sql, post_id)
+	if err != nil {
+		fmt.Println(err)
+		return result
+	}
+	defer rows.Close()
+
+	for rows.Next() {
+		var post Post
+		err = rows.Scan(&post.Id, &post.User_id, &post.Time, &post.Title, &post.Content, &post.Likes, &post.Dislikes, &post.Comments)
+		if err != nil {
+			fmt.Println(err)
+			return result
+		}
+		post.Commentstruct = DbGetPostComments(post.Id)
+		post.Tags = DbGetPostTags(post.Id)
+		result = post
+	}
+	return result
+
 }
 
 // get posts
@@ -165,33 +198,33 @@ func DbInsertComment(post_id int, user_id, content string) error {
 }
 
 // insert new post and its tags
-func DbInsertPost(user_id, title, content string, tags []int) error {
+func DbInsertPost(user_id, title, content string, tags []int) (error, int) {
 	t := time.Now()
 	dbtime := t.Format("2006-01-02 15:04:05")
 	postq, err := Db.Prepare("INSERT INTO post(user_id, title, content, time) values(?, ?, ?, ?)")
 	if err != nil {
-		return err
+		return err, 0
 	}
 	defer postq.Close()
 
 	_, err = postq.Exec(user_id, title, content, dbtime)
 	if err != nil {
-		return err
+		return err, 0
 
 	}
 	post_id := 0
 	err = Db.QueryRow("SELECT id FROM post WHERE time=? and title=? and content=? and user_id=?", dbtime, title, content, user_id).Scan(&post_id)
 	if err != nil {
-		return err
+		return err, 0
 	}
 
 	if post_id == 0 {
-		return errors.New("could not find the post")
+		return errors.New("could not find the post"), 0
 	}
 
 	tagq, err := Db.Prepare("INSERT INTO post_tag(post_id, tag_id) values(?, ?)")
 	if err != nil {
-		return err
+		return err, 0
 	}
 	defer tagq.Close()
 
@@ -199,11 +232,11 @@ func DbInsertPost(user_id, title, content string, tags []int) error {
 
 		_, err = tagq.Exec(post_id, tag)
 		if err != nil {
-			return err
+			return err, 0
 		}
 	}
 
-	return nil
+	return nil, post_id
 }
 
 // insert new user
@@ -278,14 +311,23 @@ func DbUserIdExist(input string) bool {
 	}
 }
 
-// authenticate by username and password
 func DbAuthenticateUser(email, pwd string) bool {
 	result := false
-	var pw string
+	var user, pw string
 
-	err := Db.QueryRow("SELECT password FROM user WHERE email=?", email).Scan(&pw) //todo, use count(*) instead
+	err := Db.QueryRow("SELECT id, password FROM user WHERE email=?", email).Scan(&user, &pw)
 	if err != nil {
 		return result
 	}
-	return CheckPasswordHash(pwd, pw)
+
+	if CheckPasswordHash(pwd, pw) {
+		User_id = user
+		result = true
+	} else {
+		User_id = ""
+		result = false
+	}
+
+	return result
 }
+

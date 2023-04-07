@@ -51,97 +51,101 @@ func loginAuthHandler(w http.ResponseWriter, r *http.Request) {
 
 }
 
+func logoutHandler(w http.ResponseWriter, r *http.Request) {
+	fmt.Println("*****logout running*****")
+
+	// Error handling with wrong path
+	if r.URL.Path != "/logout" {
+		http.Error(w, "Bad request - 404 resource not found.", http.StatusNotFound)
+		return
+	}
+
+	// Errpr handling wrong method
+	if r.Method != "GET" {
+		http.Error(w, "Bad request - 405 method not allowed.", http.StatusMethodNotAllowed)
+		return
+	}
+
+	database.User_id = ""
+	// login connection
+	err := tmpl.ExecuteTemplate(w, "logout", nil)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+}
+
+
 func registerAuthHandler(w http.ResponseWriter, r *http.Request) {
 	fmt.Println("*****registerAuthHandler running*****")
-
 	// Error handling with wrong path
 	if r.URL.Path != "/registerauth" {
 		http.Error(w, "Bad request - 404 resource not found.", http.StatusNotFound)
 		return
 	}
-
 	// Errpr handling wrong method
 	if r.Method != "POST" {
 		http.Error(w, "Bad request - 405 method not allowed.", http.StatusMethodNotAllowed)
 		return
 	}
 	r.ParseForm()
-
 	// Username criteria
 	username := r.FormValue("usernameUp")
 	ua := registration.UsernameCorrect(username)
 	ul := registration.UsernameLen(username)
-
 	// Email criteria
 	email := r.FormValue("emailUp")
 	ev := registration.IsValidEmail(email)
-
 	// Password criteria
 	password := r.FormValue("passwordUp")
 	pwc := registration.PswdConditions(password)
-
+	// TODO need võib ilmselt praegu ära võtta
 	// Username has missing criteria
 	if !ua || !ul {
 		fmt.Println("Username has missing criteria")
 		// TODO see tekst peaks ilmuma normaalsesse kohta
 		tmpl.ExecuteTemplate(w, "register", "Please check username criteria")
+		return
 	}
-
 	// Email criteria
 	if !ev {
 		fmt.Println("Email has missing criteria")
 		tmpl.ExecuteTemplate(w, "register", "Please check email")
+		return
 	}
-
 	// Password criteria
-	if !pwc.Lowercase || !pwc.Uppercase || !pwc.Number || !pwc.Special || !pwc.Length || pwc.NoSpaces {
-		fmt.Println("Password has missing criteria")
+//	if !pwc.Lowercase || !pwc.Uppercase || !pwc.Number || !pwc.Special || !pwc.Length || pwc.NoSpaces {
+		if !pwc.Lowercase || !pwc.Uppercase || !pwc.Number || !pwc.Length || pwc.NoSpaces {
+			fmt.Println("Password has missing criteria")
 		tmpl.ExecuteTemplate(w, "register", "Please check password criteria")
+		return
 	}
-
-	// login connection
+	/*
+		Database lookup
+	*/
+	var rf database.User
+	rf.Id = username
+	rf.Email = email
+	rf.Password = password
+	fmt.Println("-----")
+	fmt.Println(rf)
+	fmt.Println("-----")
+	// Checking email and username
+	ux := database.DbUserIdExist(rf.Id)
+	fmt.Println("Is username:", ux)
+	ex := database.DbEmailExist(rf.Email)
+	fmt.Println("Is email:", ex)
+	if ux || ex {
+		fmt.Println("Email or username already exists")
+		tmpl.ExecuteTemplate(w, "register", "Please choose another email and/or username because it is already registered")
+		return
+	}
+	// Inserting values into database
+	fmt.Println(database.DbInsertUser(rf))
+	// Going to login page
 	err := tmpl.ExecuteTemplate(w, "registerauth", nil)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
-
-	/*
-	var rf database.User
-
-	var uID string
-	rf.Id = uID // TODO vist?
-
-	rf.Name = username
-	rf.Email = email
-	rf.Password = password
-
-	fmt.Println("-----")
-	fmt.Println(rf)
-	fmt.Println("-----")
-
-	// TODO checkid vastu baasi
-	rslt := database.DbGetUserByIdOrEmail(rf.Email)
-	fmt.Println(rslt)
-	fmt.Println("*****")
-
-	// Hashing test
-	hpass := database.HashPassword(rf.Password)
-	fmt.Println("Hash password:", hpass)
-	fmt.Println("Hash correct:", database.CheckPasswordHash(rf.Password, hpass))
-	*/
-
-	/*
-
-		// login connection
-		err := tmpl.ExecuteTemplate(w, "registerauth", nil)
-		if err != nil {
-			http.Error(w, err.Error(), http.StatusInternalServerError)
-			return
-		}
-	*/
-
-	// TODO kui vorm on norm, siis ta peaks saatma registerAuth lehele vms, mis ütleb et kõik on norm ja kus on nupp mis suunab logimise lehele tagasi
-	// TODO Või siis kohe login page-le, kus üleval on template teade, et account created succesfully.
-
 }

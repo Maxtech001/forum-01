@@ -1,6 +1,7 @@
 package registration
 
 import (
+	"fmt"
 	"regexp"
 	"unicode"
 )
@@ -9,7 +10,7 @@ type Password struct {
 	Lowercase bool
 	Uppercase bool
 	Number    bool
-	Special   bool
+//	Special   bool
 	NoSpaces  bool
 	Length    bool
 }
@@ -51,8 +52,8 @@ func PswdConditions(p string) Password {
 			pw.Uppercase = true
 		case unicode.IsNumber(char):
 			pw.Number = true
-		case unicode.IsPunct(char) || unicode.IsSymbol(char):
-			pw.Special = true
+//		case unicode.IsPunct(char) || unicode.IsSymbol(char):
+//			pw.Special = true
 		case unicode.IsSpace(int32(char)):
 			pw.NoSpaces = false
 		}
@@ -66,6 +67,7 @@ func PswdConditions(p string) Password {
 
 // Checking if email follows email standards
 func IsValidEmail(e string) bool {
+	fmt.Println(e)
 	emailRegex := regexp.MustCompile(`^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$`)
 	return emailRegex.MatchString(e)
 }
