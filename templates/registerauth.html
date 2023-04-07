@@ -7,17 +7,20 @@
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
+    <!-- CSS -->
+    <link rel="stylesheet" href="/styles/styleLoading.css">
+
     <script>
-		// Redirect to the new page after 3 seconds
+		// Redirect to the new page after 1 seconds
 		setTimeout(function() {
 			window.location.href = "/login";
-		}, 1000); // 3000 milliseconds = 3 seconds
+		}, 1000); 
 	</script>
 
 </head>
 <body>
-    <h1>Account succesfully created</h1>
-    <h2>You will be redirected in 3 seconds to login page</h2>
+    <h1>You will be redirected to the login page...</h1>
+    <div id="loading"></div>
 </body>
 </html>
 {{ end }}
