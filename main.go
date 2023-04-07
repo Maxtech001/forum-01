@@ -15,12 +15,12 @@ func main() {
 	db, err := database.InitDB()
 
 	if err != nil {
-		fmt.Println(err)
+		log.Fatalf("Internal server error - %v", http.StatusInternalServerError)
 		return
 	}
 	defer db.Close()
 
-	fmt.Println("Database open")
+	fmt.Println("Database connection open")
 
 	// Starting server
 	if len(os.Args) == 1 {

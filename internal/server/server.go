@@ -4,7 +4,6 @@ Server-specific settings
 package server
 
 import (
-	"fmt"
 	"html/template"
 	"log"
 	"net/http"
@@ -19,11 +18,6 @@ var (
 // Start the server
 func StartServer() {
 	tmpl = template.Must(template.ParseGlob("templates/*.html"))
-
-	fmt.Println("Templates:")
-	for _, t := range tmpl.Templates() {
-		fmt.Println("- " + t.Name())
-	}
 
 	// Serving up the result with mux
 	mux = http.NewServeMux()
