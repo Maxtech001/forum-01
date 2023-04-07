@@ -10,9 +10,9 @@ type Password struct {
 	Lowercase bool
 	Uppercase bool
 	Number    bool
-//	Special   bool
-	NoSpaces  bool
-	Length    bool
+	//	Special   bool
+	NoSpaces bool
+	Length   bool
 }
 
 const (
@@ -52,8 +52,8 @@ func PswdConditions(p string) Password {
 			pw.Uppercase = true
 		case unicode.IsNumber(char):
 			pw.Number = true
-//		case unicode.IsPunct(char) || unicode.IsSymbol(char):
-//			pw.Special = true
+			//		case unicode.IsPunct(char) || unicode.IsSymbol(char):
+			//			pw.Special = true
 		case unicode.IsSpace(int32(char)):
 			pw.NoSpaces = false
 		}

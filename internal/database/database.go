@@ -4,6 +4,7 @@ import (
 	"database/sql"
 	"errors"
 	"fmt"
+	"sync"
 	"time"
 
 	_ "github.com/mattn/go-sqlite3"
@@ -11,21 +12,27 @@ import (
 
 const dbfile = "./db/forum.db"
 
-var Db *sql.DB
+var (
+	db   *sql.DB
+	once sync.Once
+)
 
-func InitDb() {
-	// Setting up database
-	Db = DbOpen()
-}
-
-// open database
-func DbOpen() *sql.DB {
-	Db, err := sql.Open("sqlite3", dbfile)
-	if err != nil {
-		fmt.Println(err)
-		return nil
-	}
-	return Db
+// Init db connection and only checking once
+func InitDB() (*sql.DB, error) {
+	var err error
+	once.Do(func() {
+		db, err = sql.Open("sqlite3", dbfile)
+		if err != nil {
+			fmt.Println(err)
+			return
+		}
+		err = db.Ping()
+		if err != nil {
+			fmt.Println(err)
+			return
+		}
+	})
+	return db, err
 }
 
 func DbGetUserByCookie(cookie string) string {
@@ -35,7 +42,7 @@ func DbGetUserByCookie(cookie string) string {
 		return ""
 	}
 	var user string
-	err := Db.QueryRow("SELECT user_id FROM session WHERE id=?", cookie).Scan(&user)
+	err := db.QueryRow("SELECT user_id FROM session WHERE id=?", cookie).Scan(&user)
 	if err != nil {
 		return ""
 	}
@@ -44,7 +51,7 @@ func DbGetUserByCookie(cookie string) string {
 
 func DbDeleteCookie(cookie string) {
 	fmt.Println("Going to delete cookie:", cookie)
-	dbq, _ := Db.Prepare("DELETE FROM session WHERE id = ?")
+	dbq, _ := db.Prepare("DELETE FROM session WHERE id = ?")
 
 	defer dbq.Close()
 	dbq.Exec(cookie)
@@ -55,7 +62,7 @@ func DbAddCookie(cookie, user_id string) {
 		fmt.Println("user_id missing, can't set cookie")
 	}
 	fmt.Println("Going to add cookie for:", user_id, cookie)
-	dbq, _ := Db.Prepare("INSERT INTO session(id, user_id) values (?, ?)")
+	dbq, _ := db.Prepare("INSERT INTO session(id, user_id) values (?, ?)")
 
 	defer dbq.Close()
 	dbq.Exec(cookie, user_id)
@@ -70,7 +77,7 @@ func DbGetSinglePost(post_id int) Post {
 		"(select count(*) from comment c where c.post_id=p.id) comments " +
 		"from post p " +
 		"where id =?"
-	rows, err := Db.Query(sql, post_id)
+	rows, err := db.Query(sql, post_id)
 	if err != nil {
 		fmt.Println(err)
 		return result
@@ -101,7 +108,7 @@ func DbGetPosts() []Post {
 		"(select count(*) from comment c where c.post_id=p.id) comments " +
 		"from post p " +
 		"order by time desc"
-	rows, err := Db.Query(sql)
+	rows, err := db.Query(sql)
 	if err != nil {
 		fmt.Println(err)
 		return result
@@ -130,7 +137,7 @@ func DbGetPostComments(post_id int) []Comment {
 		"(select count(*) from feedback f where f.comment_id=c.id and f.type = '+') likes," +
 		"(select count(*) from feedback f where f.comment_id=c.id and f.type = '-') dislikes " +
 		"from comment c where c.post_id=?"
-	rows, err := Db.Query(sql, post_id)
+	rows, err := db.Query(sql, post_id)
 	if err != nil {
 		fmt.Println(err)
 		return result
@@ -152,7 +159,7 @@ func DbGetPostComments(post_id int) []Comment {
 // get all tags
 func DbGetTags() []Tag {
 	var result []Tag
-	rows, err := Db.Query("SELECT id, name FROM tag")
+	rows, err := db.Query("SELECT id, name FROM tag")
 	if err != nil {
 		fmt.Println(err)
 		return result
@@ -174,7 +181,7 @@ func DbGetTags() []Tag {
 // get post tags
 func DbGetPostTags(post_id int) []Tag {
 	var result []Tag
-	rows, err := Db.Query("SELECT pt.tag_id, t.name FROM post_tag pt LEFT JOIN tag t ON pt.tag_id = t.id WHERE pt.post_id=?", post_id)
+	rows, err := db.Query("SELECT pt.tag_id, t.name FROM post_tag pt LEFT JOIN tag t ON pt.tag_id = t.id WHERE pt.post_id=?", post_id)
 	if err != nil {
 		fmt.Println(err)
 		return result
@@ -195,7 +202,7 @@ func DbGetPostTags(post_id int) []Tag {
 
 // insert feedback
 func DbInsertFeedback(post_id, comment_id int, user_id, ftype string) error {
-	fbq, err := Db.Prepare("INSERT INTO feedback(post_id, comment_id, user_id, type) values(?, ?, ?, ?)")
+	fbq, err := db.Prepare("INSERT INTO feedback(post_id, comment_id, user_id, type) values(?, ?, ?, ?)")
 	if err != nil {
 		return err
 	}
@@ -213,7 +220,7 @@ func DbInsertFeedback(post_id, comment_id int, user_id, ftype string) error {
 func DbInsertComment(post_id int, user_id, content string) error {
 	t := time.Now()
 	dbtime := t.Format("2006-01-02 15:04:05")
-	commentq, err := Db.Prepare("INSERT INTO comment(post_id, user_id, content, time) values(?, ?, ?, ?)")
+	commentq, err := db.Prepare("INSERT INTO comment(post_id, user_id, content, time) values(?, ?, ?, ?)")
 	if err != nil {
 		return err
 	}
@@ -232,7 +239,7 @@ func DbInsertComment(post_id int, user_id, content string) error {
 func DbInsertPost(user_id, title, content string, tags []int) (error, int) {
 	t := time.Now()
 	dbtime := t.Format("2006-01-02 15:04:05")
-	postq, err := Db.Prepare("INSERT INTO post(user_id, title, content, time) values(?, ?, ?, ?)")
+	postq, err := db.Prepare("INSERT INTO post(user_id, title, content, time) values(?, ?, ?, ?)")
 	if err != nil {
 		return err, 0
 	}
@@ -244,7 +251,7 @@ func DbInsertPost(user_id, title, content string, tags []int) (error, int) {
 
 	}
 	post_id := 0
-	err = Db.QueryRow("SELECT id FROM post WHERE time=? and title=? and content=? and user_id=?", dbtime, title, content, user_id).Scan(&post_id)
+	err = db.QueryRow("SELECT id FROM post WHERE time=? and title=? and content=? and user_id=?", dbtime, title, content, user_id).Scan(&post_id)
 	if err != nil {
 		return err, 0
 	}
@@ -253,7 +260,7 @@ func DbInsertPost(user_id, title, content string, tags []int) (error, int) {
 		return errors.New("could not find the post"), 0
 	}
 
-	tagq, err := Db.Prepare("INSERT INTO post_tag(post_id, tag_id) values(?, ?)")
+	tagq, err := db.Prepare("INSERT INTO post_tag(post_id, tag_id) values(?, ?)")
 	if err != nil {
 		return err, 0
 	}
@@ -272,7 +279,7 @@ func DbInsertPost(user_id, title, content string, tags []int) (error, int) {
 
 // insert new user
 func DbInsertUser(user User) error {
-	stmt, err := Db.Prepare("INSERT INTO user(id, email, password) values(?, ?, ?)")
+	stmt, err := db.Prepare("INSERT INTO user(id, email, password) values(?, ?, ?)")
 	if err != nil {
 		return err
 	}
@@ -291,7 +298,7 @@ func DbInsertUser(user User) error {
 // check if user exists
 func DbGetUserByIdOrEmail(input string) []User {
 	var result []User
-	rows, err := Db.Query("SELECT id, email, password FROM user WHERE id=? OR email=?", input, input)
+	rows, err := db.Query("SELECT id, email, password FROM user WHERE id=? OR email=?", input, input)
 	if err != nil {
 		fmt.Println(err)
 		return result
@@ -314,7 +321,7 @@ func DbGetUserByIdOrEmail(input string) []User {
 func DbEmailExist(input string) bool {
 	var usercount int
 
-	err := Db.QueryRow("SELECT count(*) FROM user WHERE email=?", input).Scan(&usercount)
+	err := db.QueryRow("SELECT count(*) FROM user WHERE email=?", input).Scan(&usercount)
 	if err != nil {
 		fmt.Println(err)
 		return false
@@ -330,7 +337,7 @@ func DbEmailExist(input string) bool {
 func DbUserIdExist(input string) bool {
 	var usercount int
 
-	err := Db.QueryRow("SELECT count(*) FROM user WHERE id=?", input).Scan(&usercount)
+	err := db.QueryRow("SELECT count(*) FROM user WHERE id=?", input).Scan(&usercount)
 	if err != nil {
 		fmt.Println(err)
 		return false
@@ -346,7 +353,7 @@ func DbAuthenticateUser(email, pwd string) (bool, string) {
 	result := false
 	var user, pw string
 
-	err := Db.QueryRow("SELECT id, password FROM user WHERE email=?", email).Scan(&user, &pw)
+	err := db.QueryRow("SELECT id, password FROM user WHERE email=?", email).Scan(&user, &pw)
 	if err != nil {
 		return result, ""
 	}
