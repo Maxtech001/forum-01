@@ -35,7 +35,7 @@ func loginAuthHandler(w http.ResponseWriter, r *http.Request) {
 
 	cp, user_id := database.DbAuthenticateUser(email, password)
 
-	// TODO või siis email või password on vale
+	// TODO või siis email või password on vale indikaator saata kasutajale
 	if !cp {
 		http.Error(w, "Forbidden", http.StatusForbidden)
 		return
@@ -116,41 +116,11 @@ func registerAuthHandler(w http.ResponseWriter, r *http.Request) {
 		Front-end lookup
 	*/
 	r.ParseForm()
-	// Username criteria
-	username := r.FormValue("usernameUp")
-	ua := registration.UsernameCorrect(username)
-	ul := registration.UsernameLen(username)
-	// Email criteria
-	email := r.FormValue("emailUp")
-	ev := registration.IsValidEmail(email)
-	// Password criteria
-	password := r.FormValue("passwordUp")
-	pwc := registration.PswdConditions(password)
-	// TODO need võib ilmselt praegu ära võtta
-	// Username has missing criteria
-	if !ua || !ul {
-		fmt.Println("Username has missing criteria")
-		// TODO see tekst peaks ilmuma normaalsesse kohta
-		tmpl.ExecuteTemplate(w, "register", "Please check username criteria")
-		return
-	}
-	// Email criteria
-	if !ev {
-		fmt.Println("Email has missing criteria")
-		tmpl.ExecuteTemplate(w, "register", "Please check email")
-		return
-	}
-	// Password criteria
-	//	if !pwc.Lowercase || !pwc.Uppercase || !pwc.Number || !pwc.Special || !pwc.Length || pwc.NoSpaces {
-	if !pwc.Lowercase || !pwc.Uppercase || !pwc.Number || !pwc.Length || pwc.NoSpaces {
-		fmt.Println("Password has missing criteria")
-		tmpl.ExecuteTemplate(w, "register", "Please check password criteria")
-		return
-	}
+	// Email, username and password
+	username, email, password := r.FormValue("usernameUp"), r.FormValue("emailUp"), r.FormValue("passwordUp")
 	/*
 		Database lookup
 	*/
-
 	rf := registration.NewUser(username, email, password)
 
 	// Checking email and username
@@ -158,6 +128,7 @@ func registerAuthHandler(w http.ResponseWriter, r *http.Request) {
 	fmt.Println("Is username:", ux)
 	ex := database.DbEmailExist(rf.Email)
 	fmt.Println("Is email:", ex)
+	// TODO see indikaator saata kasutajale
 	if ux || ex {
 		fmt.Println("Email or username already exists")
 		tmpl.ExecuteTemplate(w, "register", "Please choose another email and/or username because it is already registered")

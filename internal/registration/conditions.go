@@ -1,3 +1,6 @@
+/*
+TODO depracted HTML patterniga peaks kergemini ära lahendama nüüd
+*/
 package registration
 
 import (
