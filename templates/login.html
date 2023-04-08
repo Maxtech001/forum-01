@@ -57,8 +57,9 @@
                     </div>
 
                     <div class="form-floating">
+                    <!-- pattern="^(?=.*?[A-Z])(?=.*?[a-z])(?=.*?\d)(?=.*?[\W_]).{8,}$" -->
                         <input type="password" class="form-control password" id="passwordIn" name="passwordIn" required minlength="8" maxlength="20"
-                        pattern="^(?=.*?[A-Z])(?=.*?[a-z])(?=.*?\d)(?=.*?[\W_]).{8,}$"
+                        
                         title="Must contain at least one uppercase letter, one lowercase letter, one number, and one symbol.">
                         <i class='bx bx-hide eye-icon'></i>
                         <label for="passwordIn">Password</label>
