@@ -1,6 +1,7 @@
 package server
 
 import (
+	"errors"
 	"time"
 
 	"01.kood.tech/git/kretesaak/forum/internal/database"
@@ -26,5 +27,17 @@ func getCreatePostPageContent(u string) database.Createpost {
 	return database.Createpost{
 		User_id: u,
 		Tags:    database.DbGetTags(),
+	}
+}
+
+func getPostPageContent(pID int, u string) (error, database.Postpage) {
+	post := database.DbGetSinglePost(pID)
+
+	if post.Id == 0 {
+		return errors.New("No such post"), database.Postpage{}
+	}
+	return nil, database.Postpage{
+		User_id: u,
+		Post:    post,
 	}
 }

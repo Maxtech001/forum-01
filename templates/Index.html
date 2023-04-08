@@ -107,16 +107,18 @@
                         <p class="post-title">
                             {{ .Title }}
                             </h4>
-                        <div class="post-footer">
-                            <div class="post-info">
+                        <div class="post-footer w-100">
+                            <div class="post-info w-auto">
                                 <p>
                                     by {{ .User_id }} | {{ formatTime .Time }} | Tags:
                                 </p>
-                                {{ range .Tags }}
-                                <div class="tag-bubble">
-                                    {{ .Name }}
+                                <div class="post-tags w-auto">
+                                    {{ range .Tags }}
+                                    <div class="tag-bubble">
+                                        {{ .Name }}
+                                    </div>
+                                    {{ end }}
                                 </div>
-                                {{ end }}
                             </div>
                             <div class="post-feedback">
                                 <div class="feedback-item">

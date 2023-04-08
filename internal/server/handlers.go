@@ -53,7 +53,7 @@ func mainPageHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func postHandler(w http.ResponseWriter, r *http.Request) {
-	fmt.Println("*****postHandler running*****")
+	user_id := getUserByCookie(r)
 
 	// Wrong method handling
 	if r.Method != "GET" {
@@ -68,16 +68,17 @@ func postHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// Get post from database
-	post := database.DbGetSinglePost(postID)
+	// Getting content
+	err, postPageContent := getPostPageContent(postID, user_id)
+
 	// If missing
-	if post.Id == 0 {
+	if err != nil {
 		http.Error(w, "Bad request - post not found.", http.StatusNotFound)
 		return
 	}
 
 	// Render post template
-	err = tmpl.ExecuteTemplate(w, "post", post)
+	err = tmpl.ExecuteTemplate(w, "post", postPageContent)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
@@ -95,6 +96,7 @@ func createPostHandler(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 
+		// Getting content
 		createPostPageContent := getCreatePostPageContent(user_id)
 
 		// login connection

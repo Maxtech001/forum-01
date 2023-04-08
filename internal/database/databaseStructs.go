@@ -43,3 +43,8 @@ type Createpost struct {
 	User_id string
 	Tags    []Tag
 }
+
+type Postpage struct {
+	User_id string
+	Post    Post
+}
