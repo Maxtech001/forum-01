@@ -130,11 +130,6 @@ func createPostHandler(w http.ResponseWriter, r *http.Request) {
 			fmt.Println("DbInsertpost Success:", post_id)
 		}
 
-		path := "/post/" + strconv.Itoa(post_id)
-		fmt.Println(path)
-		mux.HandleFunc(path, func(w http.ResponseWriter, r *http.Request) {
-			postHandler(w, r)
-		})
 		// Redirect to success page
 		http.Redirect(w, r, "/", http.StatusSeeOther)
 	}

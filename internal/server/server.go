@@ -17,7 +17,7 @@ var (
 
 // Start the server
 func StartServer() {
-	//tmpl = template.Must(template.ParseGlob("templates/*.html"))
+	// tmpl = template.Must(template.ParseGlob("templates/*.html"))
 	// Templating with custom time-helper function
 	tmpl = template.Must(template.New("").Funcs(template.FuncMap{
 		"formatTime": formatTime,
@@ -32,11 +32,7 @@ func StartServer() {
 	mux.HandleFunc("/createpost", createPostHandler)     // creating a post page
 	mux.HandleFunc("/logout", logoutHandler)             // logout handler
 	mux.HandleFunc("/", mainPageHandler)                 // main page handler
-
-	// Post handling
-	mux.HandleFunc("/post/", func(w http.ResponseWriter, r *http.Request) {
-		postHandler(w, r)
-	})
+	mux.HandleFunc("/post/", postHandler)                // post handling
 
 	// Serving up files
 	mux.Handle("/styles/", http.StripPrefix("/styles/", http.FileServer(http.Dir("./styles/")))) // css serving
