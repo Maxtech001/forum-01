@@ -86,6 +86,7 @@ func postHandler(w http.ResponseWriter, r *http.Request) {
 
 func createPostHandler(w http.ResponseWriter, r *http.Request) {
 	fmt.Println("*****createPostHandler running*****")
+	user_id := getUserByCookie(r)
 
 	if r.Method != "POST" {
 		// Error handling with wrong path
@@ -94,10 +95,10 @@ func createPostHandler(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 
-		tags := database.DbGetTags()
+		createPostPageContent := getCreatePostPageContent(user_id)
 
 		// login connection
-		err := tmpl.ExecuteTemplate(w, "createpost", tags)
+		err := tmpl.ExecuteTemplate(w, "createpost", createPostPageContent)
 		if err != nil {
 			http.Error(w, err.Error(), http.StatusInternalServerError)
 			return

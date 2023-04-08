@@ -21,3 +21,10 @@ func getMainPageContent(u string) database.Mainpage {
 		Tags:    database.DbGetTags(),
 	}
 }
+
+func getCreatePostPageContent(u string) database.Createpost {
+	return database.Createpost{
+		User_id: u,
+		Tags:    database.DbGetTags(),
+	}
+}

@@ -38,3 +38,8 @@ type Mainpage struct {
 	Posts   []Post
 	Tags    []Tag
 }
+
+type Createpost struct {
+	User_id string
+	Tags    []Tag
+}
