@@ -26,11 +26,8 @@ func loginAuthHandler(w http.ResponseWriter, r *http.Request) {
 	r.ParseForm()
 
 	// Username criteria
-	email := r.FormValue("emailIn")
+	email, password := r.FormValue("emailIn"), r.FormValue("passwordIn")
 	fmt.Println("User logged in:", email)
-
-	// Password criteria
-	password := r.FormValue("passwordIn")
 	fmt.Println("Password used by user:", password)
 
 	cp, user_id := database.DbAuthenticateUser(email, password)
@@ -41,6 +38,9 @@ func loginAuthHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	/*
+		Cookie logic
+	*/
 	cookie, err := r.Cookie("session")
 	fmt.Println("Cookie get:", cookie)
 	if err != nil {
@@ -131,7 +131,7 @@ func registerAuthHandler(w http.ResponseWriter, r *http.Request) {
 	// TODO see indikaator saata kasutajale
 	if ux || ex {
 		fmt.Println("Email or username already exists")
-		tmpl.ExecuteTemplate(w, "register", "Please choose another email and/or username because it is already registered")
+		tmpl.ExecuteTemplate(w, "register", "Please choose another email and/or username because it already exists")
 		return
 	}
 	// Inserting values into database
