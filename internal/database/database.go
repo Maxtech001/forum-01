@@ -100,14 +100,52 @@ func DbGetSinglePost(post_id int) Post {
 }
 
 // get posts
-func DbGetPosts() []Post {
+func DbGetPosts(user_id string, params map[string][]string) []Post {
 	var result []Post
+
+	tagfilter := ""
+	if len(params["tag"]) > 0 {
+		for _, tag := range params["tag"] {
+			if tagfilter == "" {
+				tagfilter = "where ("
+			} else {
+				tagfilter = tagfilter + "or "
+			}
+			tagfilter = tagfilter + "(select count(*) from post_tag pt where pt.post_id=p.id and pt.tag_id=" + tag + ")>0 "
+		}
+		tagfilter = tagfilter + ") "
+	}
+
+	ownpostfilter := ""
+	if len(params["ownposts"]) > 0 {
+		if tagfilter == "" {
+			ownpostfilter = "where "
+		} else {
+			ownpostfilter = "and "
+		}
+		ownpostfilter = ownpostfilter + "user_id ='" + user_id + "'"
+	}
+
+	likefilter := ""
+	if len(params["liked"]) > 0 {
+		if tagfilter == "" && ownpostfilter == "" {
+			likefilter = "where "
+		} else {
+			likefilter = "and "
+		}
+		likefilter = likefilter + "(select count(*) from feedback f where f.post_id = p.id and user_id ='" + user_id + "')>0 "
+	}
+
 	sql := "select id, user_id, time, title, content, " +
 		"(select count(*) from feedback f where f.post_id=p.id and f.type = '+') likes, " +
 		"(select count(*) from feedback f where f.post_id=p.id and f.type = '-') dislikes, " +
 		"(select count(*) from comment c where c.post_id=p.id) comments " +
 		"from post p " +
+		tagfilter +
+		ownpostfilter +
+		likefilter +
 		"order by time desc"
+		//	fmt.Println(sql)
 	rows, err := db.Query(sql)
 	if err != nil {
 		fmt.Println(err)
@@ -237,6 +275,7 @@ func DbInsertComment(post_id int, user_id, content string) error {
 
 // insert new post and its tags
 func DbInsertPost(user_id, title, content string, tags []int) (error, int) {
+	fmt.Println("DbInsertPost input tags:", tags)
 	t := time.Now()
 	dbtime := t.Format("2006-01-02 15:04:05")
 	postq, err := db.Prepare("INSERT INTO post(user_id, title, content, time) values(?, ?, ?, ?)")
@@ -267,6 +306,7 @@ func DbInsertPost(user_id, title, content string, tags []int) (error, int) {
 	defer tagq.Close()
 
 	for _, tag := range tags {
+		fmt.Println("DbInsertPost tags range:", tag)
 
 		_, err = tagq.Exec(post_id, tag)
 		if err != nil {

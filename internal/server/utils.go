@@ -14,10 +14,10 @@ func formatTime(t string) string {
 }
 
 // Returning main page content
-func getMainPageContent(u string) database.Mainpage {
+func getMainPageContent(u string, qparams map[string][]string) database.Mainpage {
 	return database.Mainpage{
 		User_id: u,
-		Posts:   database.DbGetPosts(),
+		Posts:   database.DbGetPosts(u, qparams),
 		Tags:    database.DbGetTags(),
 	}
 }

@@ -37,7 +37,7 @@ func mainPageHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Getting content
-	mainPageContent := getMainPageContent(user_id)
+	mainPageContent := getMainPageContent(user_id, r.URL.Query())
 	/*
 		var mainPageContent database.Mainpage
 		mainPageContent.User_id = user_id
