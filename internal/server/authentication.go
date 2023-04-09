@@ -46,7 +46,9 @@ func loginAuthHandler(w http.ResponseWriter, r *http.Request) {
 	*/
 	cookie, err := r.Cookie("session")
 	fmt.Println("Cookie get:", cookie)
-	if err != nil {
+	user := getUserByCookie(r)
+
+	if err != nil || user == "" {
 		// Creating a version 4 UUID
 		id, err2 := uuid.NewV4()
 		if err2 != nil {
@@ -69,6 +71,8 @@ func loginAuthHandler(w http.ResponseWriter, r *http.Request) {
 		//	fmt.Println("Cookie set:", cookie)
 		database.DbAddCookie(cookie.Value, user_id, exp)
 	}
+
+	// browser has cookie,
 
 	// login connection
 	err = tmpl.ExecuteTemplate(w, "loginauth", nil)
