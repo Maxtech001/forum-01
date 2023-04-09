@@ -168,7 +168,7 @@ func commentAuthHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	r.ParseForm()
+	//r.ParseForm()
 	user_id := getUserByCookie(r)
 	content := r.FormValue("commentIn")
 
@@ -177,6 +177,40 @@ func commentAuthHandler(w http.ResponseWriter, r *http.Request) {
 		fmt.Println("DbInsertComment Error")
 	}
 	err = tmpl.ExecuteTemplate(w, "commentauth", postID)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+}
+
+func createPostAuthHandler(w http.ResponseWriter, r *http.Request) {
+	// Errpr handling wrong method
+	if r.Method != "POST" {
+		http.Error(w, "Bad request - 405 method not allowed.", http.StatusMethodNotAllowed)
+		return
+	}
+
+	user_id := getUserByCookie(r)
+	title := r.FormValue("titleIn")
+	content := r.FormValue("contentIn")
+	r.ParseForm()
+	tags2 := r.Form["tag"]
+	var tags1 []int
+	for _, i := range tags2 {
+		j, err := strconv.Atoi(i)
+		if err != nil {
+			panic(err)
+		}
+		tags1 = append(tags1, j)
+	}
+
+	err, post_id := database.DbInsertPost(user_id, title, content, tags1)
+	if err != nil {
+		fmt.Println("DbInsertpost Error")
+	} else {
+		fmt.Println("DbInsertpost Success:", post_id)
+	}
+	err = tmpl.ExecuteTemplate(w, "createpostauth", nil)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
