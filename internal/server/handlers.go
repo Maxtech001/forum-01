@@ -153,7 +153,7 @@ func createPostHandler(w http.ResponseWriter, r *http.Request) {
 
 		// Validate form data
 		if title == "" || content == "" {
-			http.Error(w, "Please fill in all fields", http.StatusBadRequest)
+			http.Error(w, "Please fill in all fieldsW", http.StatusBadRequest)
 			return
 		}
 

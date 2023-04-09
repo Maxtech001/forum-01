@@ -169,7 +169,13 @@ func commentAuthHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	r.ParseForm()
+	user_id := getUserByCookie(r)
+	content := r.FormValue("commentIn")
 
+	err1 := database.DbInsertComment(postID, user_id, content)
+	if err1 != nil {
+		fmt.Println("DbInsertComment Error")
+	}
 	err = tmpl.ExecuteTemplate(w, "commentauth", postID)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
