@@ -46,31 +46,43 @@
     <!-- Main content -->
     <main class="form-login  w-100 m-auto">
         </div>
-        <form action="/registerauth" method="POST">
+        <form class="needs-validation" action="/registerauth" method="POST" novalidate>
             <h1 class="logo">Knitterverse</h1>
             <h2>Let's get to know each other!</h2>
             <div class="form-main">
+                {{ if . }}
+                <div class="alert alert-danger w-100" role="alert">
+                    {{ . }}
+                </div>
+                {{end}}
                 <div class="form-fields">
                     <div class="form-floating">
                         <input type="email" class="form-control" id="emailUp" name="emailUp" required>
                         <label for="emailUP">Email address</label>
+                        <div class="invalid-feedback">
+                            Add your email in the format example@example.com
+                        </div>
                     </div>
 
                     <div class="form-floating">
                     <!--pattern="^(?=.*[A-Za-z])(?=.*\d)[A-Za-z\d]+$" -->
                         <input type="text" class="form-control" id="usernameUp" name="usernameUp" required minlength="6" maxlength="20" 
-                        
                         title="Must contain at least one letter and one number. Symbols are not allowed.">
                         <label for="usernameUp">Username</label>
+                        <div class="invalid-feedback">
+                            Username needs to be at least 6 characters long
+                        </div>
                     </div>
 
                     <div class="form-floating">
                     <!-- pattern="^(?=.*?[A-Z])(?=.*?[a-z])(?=.*?\d)(?=.*?[\W_]).{8,}$" -->
                         <input type="password" class="form-control password" id="passwordUp" name="passwordUp" required minlength="8" maxlength="20"
-                        
                         title="Must contain at least one uppercase letter, one lowercase letter, one number, and one symbol.">
                         <i class='bx bx-hide eye-icon'></i>
                         <label for="passwordUp">Password</label>
+                        <div class="invalid-feedback">
+                            Password needs to be at least 8 characters long and contain at least one uppercase letter, one lowercase letter, one number
+                        </div>
                     </div>
                 </div>
                 <button class="btn btn-primary w-100 m-auto" type="submit">Sign up</button>

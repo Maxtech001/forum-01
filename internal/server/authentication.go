@@ -37,7 +37,8 @@ func loginAuthHandler(w http.ResponseWriter, r *http.Request) {
 
 	// TODO või siis email või password on vale indikaator saata kasutajale
 	if !cp {
-		http.Error(w, "Forbidden", http.StatusForbidden)
+		fmt.Println("Email or password wrong")
+		tmpl.ExecuteTemplate(w, "login", "Can't find a user with this email and password")
 		return
 	}
 
