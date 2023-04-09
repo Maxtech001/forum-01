@@ -86,7 +86,6 @@ func DbGetSinglePost(post_id int, user_id string) Post {
 		"(select count(*) from comment c where c.post_id=p.id) comments " +
 		"from post p " +
 		"where id =?"
-	fmt.Println(sql)
 	rows, err := db.Query(sql, post_id)
 	if err != nil {
 		fmt.Println(err)
