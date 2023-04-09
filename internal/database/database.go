@@ -42,10 +42,11 @@ func DbGetUserByCookie(cookie string) string {
 		return ""
 	}
 	var user string
-	err := db.QueryRow("SELECT user_id FROM session WHERE id=?", cookie).Scan(&user)
+	err := db.QueryRow("SELECT user_id FROM session WHERE id=? and datetime(expires) > datetime('now')", cookie).Scan(&user)
 	if err != nil {
 		return ""
 	}
+
 	return user
 }
 
@@ -57,15 +58,25 @@ func DbDeleteCookie(cookie string) {
 	dbq.Exec(cookie)
 }
 
-func DbAddCookie(cookie, user_id string) {
+func DbDeleteExpiredCookies() {
+	fmt.Println("Going to delete expired cookies...")
+	stmt, _ := db.Prepare("DELETE FROM session WHERE datetime(expires) < datetime('now') or expires is NULL")
+	defer stmt.Close()
+	stmt.Exec()
+}
+
+func DbAddCookie(cookie, user_id string, exp time.Time) {
 	if user_id == "" {
 		fmt.Println("user_id missing, can't set cookie")
+		return
 	}
+	dbtime := exp.Format("2006-01-02 15:04:05")
+
 	fmt.Println("Going to add cookie for:", user_id, cookie)
-	dbq, _ := db.Prepare("INSERT INTO session(id, user_id) values (?, ?)")
+	dbq, _ := db.Prepare("INSERT INTO session(id, user_id, expires) values (?, ?, ?)")
 
 	defer dbq.Close()
-	dbq.Exec(cookie, user_id)
+	dbq.Exec(cookie, user_id, dbtime)
 }
 
 // get single post
