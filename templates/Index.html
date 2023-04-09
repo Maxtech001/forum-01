@@ -66,7 +66,7 @@
         <div class="container main-content">
 
             <!-- Filters -->
-            <form class="auto filters" action="/" method="POST">
+            <form class="auto filters" action="/" method="GET">
                 <h2>Filters</h2>
                 <div class="subfilter">
                     <h3>Tags</h3>
@@ -83,13 +83,13 @@
                 <div class="subfilter">
                     <h3>My activity</h3>
                     <div class="form-check">
-                        <input class="form-check-input" type="checkbox" value="liked" id="liked" name="tag">
+                        <input class="form-check-input" type="checkbox" value="true" id="liked" name="liked">
                         <label class="form-check-label" for="liked">
                             Liked posts
                         </label>
                     </div>
                     <div class="form-check">
-                        <input class="form-check-input" type="checkbox" value="my-post" id="my-post" name="tag">
+                        <input class="form-check-input" type="checkbox" value="true" id="my-post" name="ownposts">
                         <label class="form-check-label" for="my-post">
                             My posts
                         </label>
