@@ -41,12 +41,66 @@
 
         <!-- Post content and comments -->
         <div class="content-comments w-100">
-            {{ template "contentbox" .Post}}
+            <div class="content-box w-100">
+                <p class="content">{{ .Post.Content }}</p>
+                <div class="post-footer">
+                    <div class="post-info">
+                        <p>
+                            by {{ .Post.User_id }} | {{ formatTime .Post.Time }}
+                        </p>
+                    </div>
+                    <div class="post-feedback">
+                        <div class="feedback-item">
+                            <p>
+                                {{ .Post.Likes}}
+                            </p>
+                            <a href="/feedbackauth/post_id={{.Post.Id}}/like">
+                                <i class="bi bi-hand-thumbs-up" style="font-size: 1.5rem;"></i>
+                            </a>
+                        </div>
+                        <div class="feedback-item">
+                            <p>
+                                {{ .Post.Dislikes}}
+                            </p>
+                            <a href="/feedbackauth/post_id={{.Post.Id}}/dislike">
+                                <i class="bi bi-hand-thumbs-down" style="font-size: 1.5rem;"></i>
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
             {{ if .User_id }}
             <a href="/comment/{{.Post.Id}}"><button type="button" class="btn btn-primary">Comment</button></a>
             {{ end }}
             {{ range .Post.Commentstruct }}
-            {{template "contentbox" .}}
+            <div class="content-box w-100">
+                <p class="content">{{ .Content }}</p>
+                <div class="post-footer">
+                    <div class="post-info">
+                        <p>
+                            by {{ .User_id }} | {{ formatTime .Time }}
+                        </p>
+                    </div>
+                    <div class="post-feedback">
+                        <div class="feedback-item">
+                            <p>
+                                {{ .Likes}}
+                            </p>
+                            <a href="/feedbackauth/comment_id={{.Id}}/like">
+                                <i class="bi bi-hand-thumbs-up" style="font-size: 1.5rem;"></i>
+                            </a>
+                        </div>
+                        <div class="feedback-item">
+                            <p>
+                                {{ .Dislikes}}
+                            </p>
+                            <a href="/feedbackauth/comment_id={{.Id}}/dislike">
+                                <i class="bi bi-hand-thumbs-down" style="font-size: 1.5rem;"></i>
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
             {{ end }}
             {{if .User_id }}
             {{ if .Post.Comments }}

@@ -18,6 +18,8 @@ body {
 
 a {
     text-decoration: none;
+    color: #212529;
+
 }
 
 .form-login {
@@ -286,6 +288,7 @@ a {
     padding: 0px;
     gap: 8px;
     flex-wrap: wrap;
+    align-items: center;
 }
 
 .post-tags {

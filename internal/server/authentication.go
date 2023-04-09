@@ -171,3 +171,23 @@ func commentAuthHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 }
+
+func feedbackAuthHandler(w http.ResponseWriter, r *http.Request) {
+	// Errpr handling wrong method
+	if r.Method != "GET" {
+		http.Error(w, "Bad request - 405 method not allowed.", http.StatusMethodNotAllowed)
+		return
+	}
+	/* TODO - URList (nt /feedbackauth/post_id=12/like) välja lugeda feedbacki tüüp,
+	// kas tegu on postituse või kommentaariga (saab kohe muutuja id kätte URList) ja mis on selle ID
+	// Auth template tahad postituse ID-d, et saata inimene tagasi, ehk kommentaari laikimisel tuleb see küsida andmebaasist
+
+	r.ParseForm()
+
+	err := tmpl.ExecuteTemplate(w, "feedbackauth", postID)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+	*/
+}
