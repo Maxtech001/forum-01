@@ -16,9 +16,7 @@ func getUserByCookie(r *http.Request) string {
 	if err != nil {
 		return result
 	}
-	fmt.Println("getUserByCookie DB request", cookie.Value)
 	result = database.DbGetUserByCookie(cookie.Value)
-	fmt.Println("getUserByCookie result:", result)
 	return result
 }
 

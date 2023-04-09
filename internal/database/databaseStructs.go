@@ -15,17 +15,21 @@ type Post struct {
 	Comments      int
 	Likes         int
 	Dislikes      int
+	HasLiked      int
+	HasDisliked   int
 	Tags          []Tag
 	Commentstruct []Comment
 }
 
 type Comment struct {
-	Id       int
-	User_id  string
-	Time     string
-	Content  string
-	Likes    int
-	Dislikes int
+	Id          int
+	User_id     string
+	Time        string
+	Content     string
+	Likes       int
+	Dislikes    int
+	HasLiked    int
+	HasDisliked int
 }
 
 type Tag struct {

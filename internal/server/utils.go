@@ -31,7 +31,7 @@ func getCreatePostPageContent(u string) database.Createpost {
 }
 
 func getPostPageContent(pID int, u string) (error, database.Postpage) {
-	post := database.DbGetSinglePost(pID)
+	post := database.DbGetSinglePost(pID, u)
 
 	if post.Id == 0 {
 		return errors.New("No such post"), database.Postpage{}

@@ -36,7 +36,6 @@ func InitDB() (*sql.DB, error) {
 }
 
 func DbGetUserByCookie(cookie string) string {
-	fmt.Println("DbGetUserByCookie input:", cookie)
 
 	if cookie == "" {
 		return ""
@@ -51,7 +50,6 @@ func DbGetUserByCookie(cookie string) string {
 }
 
 func DbDeleteCookie(cookie string) {
-	fmt.Println("Going to delete cookie:", cookie)
 	dbq, _ := db.Prepare("DELETE FROM session WHERE id = ?")
 
 	defer dbq.Close()
@@ -59,7 +57,6 @@ func DbDeleteCookie(cookie string) {
 }
 
 func DbDeleteExpiredCookies() {
-	fmt.Println("Going to delete expired cookies...")
 	stmt, _ := db.Prepare("DELETE FROM session WHERE datetime(expires) < datetime('now') or expires is NULL")
 	defer stmt.Close()
 	stmt.Exec()
@@ -72,7 +69,6 @@ func DbAddCookie(cookie, user_id string, exp time.Time) {
 	}
 	dbtime := exp.Format("2006-01-02 15:04:05")
 
-	fmt.Println("Going to add cookie for:", user_id, cookie)
 	dbq, _ := db.Prepare("INSERT INTO session(id, user_id, expires) values (?, ?, ?)")
 
 	defer dbq.Close()
@@ -80,14 +76,17 @@ func DbAddCookie(cookie, user_id string, exp time.Time) {
 }
 
 // get single post
-func DbGetSinglePost(post_id int) Post {
+func DbGetSinglePost(post_id int, user_id string) Post {
 	var result Post
 	sql := "select id, user_id, time, title, content, " +
 		"(select count(*) from feedback f where f.post_id=p.id and f.type = '+') likes, " +
 		"(select count(*) from feedback f where f.post_id=p.id and f.type = '-') dislikes, " +
+		"(select count(*) from feedback f where f.post_id=p.id and f.type = '+' and f.user_id='" + user_id + "') hasliked, " +
+		"(select count(*) from feedback f where f.post_id=p.id and f.type = '-' and f.user_id='" + user_id + "') hasdisliked, " +
 		"(select count(*) from comment c where c.post_id=p.id) comments " +
 		"from post p " +
 		"where id =?"
+	fmt.Println(sql)
 	rows, err := db.Query(sql, post_id)
 	if err != nil {
 		fmt.Println(err)
@@ -97,17 +96,18 @@ func DbGetSinglePost(post_id int) Post {
 
 	for rows.Next() {
 		var post Post
-		err = rows.Scan(&post.Id, &post.User_id, &post.Time, &post.Title, &post.Content, &post.Likes, &post.Dislikes, &post.Comments)
+		err = rows.Scan(&post.Id, &post.User_id, &post.Time, &post.Title, &post.Content, &post.Likes, &post.Dislikes, &post.HasLiked, &post.HasDisliked, &post.Comments)
 		if err != nil {
 			fmt.Println(err)
 			return result
 		}
-		post.Commentstruct = DbGetPostComments(post.Id)
+		post.Commentstruct = DbGetPostComments(post.Id, user_id)
 		post.Tags = DbGetPostTags(post.Id)
 		result = post
 	}
-	return result
 
+	//	fmt.Println(result)
+	return result
 }
 
 // get posts
@@ -156,7 +156,6 @@ func DbGetPosts(user_id string, params map[string][]string) []Post {
 		ownpostfilter +
 		likefilter +
 		"order by time desc"
-		//	fmt.Println(sql)
 	rows, err := db.Query(sql)
 	if err != nil {
 		fmt.Println(err)
@@ -171,7 +170,7 @@ func DbGetPosts(user_id string, params map[string][]string) []Post {
 			fmt.Println(err)
 			return result
 		}
-		post.Commentstruct = DbGetPostComments(post.Id)
+		post.Commentstruct = DbGetPostComments(post.Id, user_id)
 		post.Tags = DbGetPostTags(post.Id)
 		result = append(result, post)
 	}
@@ -180,11 +179,13 @@ func DbGetPosts(user_id string, params map[string][]string) []Post {
 }
 
 // get post comments
-func DbGetPostComments(post_id int) []Comment {
+func DbGetPostComments(post_id int, user_id string) []Comment {
 	var result []Comment
 	sql := "select id, user_id, time, content, " +
 		"(select count(*) from feedback f where f.comment_id=c.id and f.type = '+') likes," +
-		"(select count(*) from feedback f where f.comment_id=c.id and f.type = '-') dislikes " +
+		"(select count(*) from feedback f where f.comment_id=c.id and f.type = '-') dislikes, " +
+		"(select count(*) from feedback f where f.comment_id=c.id and f.type = '+' and f.user_id='" + user_id + "') hasliked, " +
+		"(select count(*) from feedback f where f.comment_id=c.id and f.type = '-' and f.user_id='" + user_id + "') hasdisliked " +
 		"from comment c where c.post_id=?"
 	rows, err := db.Query(sql, post_id)
 	if err != nil {
@@ -195,7 +196,7 @@ func DbGetPostComments(post_id int) []Comment {
 
 	for rows.Next() {
 		var comment Comment
-		err = rows.Scan(&comment.Id, &comment.User_id, &comment.Time, &comment.Content, &comment.Likes, &comment.Dislikes)
+		err = rows.Scan(&comment.Id, &comment.User_id, &comment.Time, &comment.Content, &comment.Likes, &comment.Dislikes, &comment.HasLiked, &comment.HasDisliked)
 		if err != nil {
 			fmt.Println(err)
 			return result
@@ -286,7 +287,6 @@ func DbInsertComment(post_id int, user_id, content string) error {
 
 // insert new post and its tags
 func DbInsertPost(user_id, title, content string, tags []int) (error, int) {
-	fmt.Println("DbInsertPost input tags:", tags)
 	t := time.Now()
 	dbtime := t.Format("2006-01-02 15:04:05")
 	postq, err := db.Prepare("INSERT INTO post(user_id, title, content, time) values(?, ?, ?, ?)")
@@ -317,8 +317,6 @@ func DbInsertPost(user_id, title, content string, tags []int) (error, int) {
 	defer tagq.Close()
 
 	for _, tag := range tags {
-		fmt.Println("DbInsertPost tags range:", tag)
-
 		_, err = tagq.Exec(post_id, tag)
 		if err != nil {
 			return err, 0
