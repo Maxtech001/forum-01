@@ -52,6 +52,39 @@ func mainPageHandler(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
+func commentHandler(w http.ResponseWriter, r *http.Request) {
+	user_id := getUserByCookie(r)
+
+	// Wrong method handling
+	if r.Method != "GET" {
+		http.Error(w, "Bad request - method not allowed.", http.StatusMethodNotAllowed)
+		return
+	}
+
+	// Extract post ID from URL
+	postID, err := strconv.Atoi(strings.TrimPrefix(r.URL.Path, "/comment/"))
+	if err != nil {
+		http.Error(w, "Bad request - invalid post ID.", http.StatusBadRequest)
+		return
+	}
+
+	// Getting content
+	err, postPageContent := getPostPageContent(postID, user_id)
+
+	// If missing
+	if err != nil {
+		http.Error(w, "Bad request - post not found.", http.StatusNotFound)
+		return
+	}
+
+	// Render post template
+	err = tmpl.ExecuteTemplate(w, "comment", postPageContent)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+}
+
 func postHandler(w http.ResponseWriter, r *http.Request) {
 	user_id := getUserByCookie(r)
 

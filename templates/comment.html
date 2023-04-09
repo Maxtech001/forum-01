@@ -1,4 +1,4 @@
-{{define "post"}}
+{{define "comment"}}
 <!DOCTYPE html>
 <html lang="en">
 
@@ -42,17 +42,21 @@
         <!-- Post content and comments -->
         <div class="content-comments w-100">
             {{ template "contentbox" .Post}}
-            {{ if .User_id }}
-            <a href="/comment/{{.Post.Id}}"><button type="button" class="btn btn-primary">Comment</button></a>
-            {{ end }}
-            {{ range .Post.Commentstruct }}
-            {{template "contentbox" .}}
-            {{ end }}
-            {{if .User_id }}
-            {{ if .Post.Comments }}
-            <a href="/comment/{{.Post.Id}}"><button type="button" class="btn btn-primary">Comment</button></a>
-            {{ end }}
-            {{ end }}
+            <form class="w-100 needs-validation" action="/createpost" method="POST" novalidate>
+                <div class="comment-form-main">
+                    <div class="post-form-fields w-100">    
+                        <div class="form-floating w-100">
+                            <textarea type="text" class="form-control" id="commentIn" name="commentIn"
+                                placeholder="Post content" style="height: 100px" required></textarea>
+                            <label for="commentIn">Comment</label>
+                            <div class="invalid-feedback">
+                                Please add the contents of your comment.
+                            </div>
+                        </div>
+                    </div>
+                    <a href="/commentauth/{{.Post.Id}}"><button class="btn btn-primary" type="submit">Comment</button></a>
+                </div>
+            </form>
         </div>
 
     </main>

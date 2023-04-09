@@ -70,6 +70,13 @@ a {
     gap: 16px;
 }
 
+.comment-form-main {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    gap: 16px;
+}
+
 .post-form-fields {
     display: flex;
     flex-direction: column;

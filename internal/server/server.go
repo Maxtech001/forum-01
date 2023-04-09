@@ -33,6 +33,8 @@ func StartServer() {
 	mux.HandleFunc("/logout", logoutHandler)             // logout handler
 	mux.HandleFunc("/", mainPageHandler)                 // main page handler
 	mux.HandleFunc("/post/", postHandler)                // post handling
+	mux.HandleFunc("/comment/", commentHandler)          // comment handling
+
 
 	// Serving up files
 	mux.Handle("/styles/", http.StripPrefix("/styles/", http.FileServer(http.Dir("./styles/")))) // css serving
