@@ -168,7 +168,7 @@ func commentAuthHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	r.ParseForm()
+	//r.ParseForm()
 	user_id := getUserByCookie(r)
 	content := r.FormValue("commentIn")
 

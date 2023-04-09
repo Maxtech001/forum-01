@@ -41,10 +41,9 @@
 
         <!-- Post content and comments -->
         <div class="content-comments w-100">
-            {{ template "contentbox" .Post}}
             <form class="w-100 needs-validation" action="/commentauth/{{.Post.Id}}" method="POST" novalidate>
                 <div class="comment-form-main">
-                    <div class="post-form-fields w-100">    
+                    <div class="post-form-fields w-100">
                         <div class="form-floating w-100">
                             <textarea type="text" class="form-control" id="commentIn" name="commentIn"
                                 placeholder="Post content" style="height: 100px" required></textarea>
