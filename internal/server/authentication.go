@@ -3,6 +3,7 @@ package server
 import (
 	"fmt"
 	"net/http"
+	"time"
 
 	"01.kood.tech/git/kretesaak/forum/internal/database"
 	"01.kood.tech/git/kretesaak/forum/internal/registration"
@@ -49,19 +50,22 @@ func loginAuthHandler(w http.ResponseWriter, r *http.Request) {
 		if err2 != nil {
 			fmt.Printf("failed to generate UUID: %v", err2)
 		}
-		fmt.Printf("generated Version 4 UUID %v", id)
+		exp := time.Now().Add(24 * time.Hour)
+		fmt.Println(exp)
+		exp = exp.UTC()
+		fmt.Printf("generated Version 4 UUID %v\nexpires UTC: %v\n", id, exp.Format("2006-01-02 15:04:05"))
 
-		// TODO expiration
 		cookie = &http.Cookie{
 			Name:  "session",
 			Value: id.String(),
 			// Secure: true
 			HttpOnly: true,
 			Path:     "/",
+			Expires:  exp,
 		}
 		http.SetCookie(w, cookie) // setting a cookie if it does not exist
-		fmt.Println("Cookie set:", cookie)
-		database.DbAddCookie(cookie.Value, user_id)
+		//	fmt.Println("Cookie set:", cookie)
+		database.DbAddCookie(cookie.Value, user_id, exp)
 	}
 
 	// login connection

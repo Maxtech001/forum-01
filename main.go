@@ -5,6 +5,7 @@ import (
 	"log"
 	"net/http"
 	"os"
+	"time"
 
 	"01.kood.tech/git/kretesaak/forum/internal/database"
 	"01.kood.tech/git/kretesaak/forum/internal/server"
@@ -21,6 +22,13 @@ func main() {
 	defer db.Close()
 
 	fmt.Println("Database connection open")
+
+	go func() {
+		for {
+			database.DbDeleteExpiredCookies()
+			time.Sleep(1 * time.Hour)
+		}
+	}()
 
 	// Starting server
 	if len(os.Args) == 1 {
