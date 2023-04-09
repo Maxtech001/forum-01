@@ -3,6 +3,8 @@ package server
 import (
 	"fmt"
 	"net/http"
+	"strconv"
+	"strings"
 	"time"
 
 	"01.kood.tech/git/kretesaak/forum/internal/database"
@@ -142,6 +144,28 @@ func registerAuthHandler(w http.ResponseWriter, r *http.Request) {
 	fmt.Println(database.DbInsertUser(rf))
 	// Going to login page
 	err := tmpl.ExecuteTemplate(w, "registerauth", nil)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+}
+
+func commentAuthHandler(w http.ResponseWriter, r *http.Request) {
+	// Errpr handling wrong method
+	if r.Method != "POST" {
+		http.Error(w, "Bad request - 405 method not allowed.", http.StatusMethodNotAllowed)
+		return
+	}
+
+	postID, err := strconv.Atoi(strings.TrimPrefix(r.URL.Path, "/commentauth/"))
+	if err != nil {
+		http.Error(w, "Bad request - invalid post ID.", http.StatusBadRequest)
+		return
+	}
+
+	r.ParseForm()
+
+	err = tmpl.ExecuteTemplate(w, "commentauth", postID)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
