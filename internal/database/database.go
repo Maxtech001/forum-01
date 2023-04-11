@@ -149,6 +149,8 @@ func DbGetPosts(user_id string, params map[string][]string) []Post {
 	sql := "select id, user_id, time, title, content, " +
 		"(select count(*) from feedback f where f.post_id=p.id and f.type = '+') likes, " +
 		"(select count(*) from feedback f where f.post_id=p.id and f.type = '-') dislikes, " +
+		"(select count(*) from feedback f where f.post_id=p.id and f.type = '+' and f.user_id='" + user_id + "') hasliked, " +
+		"(select count(*) from feedback f where f.post_id=p.id and f.type = '-' and f.user_id='" + user_id + "') hasdisliked, " +
 		"(select count(*) from comment c where c.post_id=p.id) comments " +
 		"from post p " +
 		tagfilter +
@@ -164,7 +166,7 @@ func DbGetPosts(user_id string, params map[string][]string) []Post {
 
 	for rows.Next() {
 		var post Post
-		err = rows.Scan(&post.Id, &post.User_id, &post.Time, &post.Title, &post.Content, &post.Likes, &post.Dislikes, &post.Comments)
+		err = rows.Scan(&post.Id, &post.User_id, &post.Time, &post.Title, &post.Content, &post.Likes, &post.Dislikes, &post.HasLiked, &post.HasDisliked, &post.Comments)
 		if err != nil {
 			fmt.Println(err)
 			return result
