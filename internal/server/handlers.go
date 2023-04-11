@@ -52,7 +52,10 @@ func mainPageHandler(w http.ResponseWriter, r *http.Request) {
 
 func commentHandler(w http.ResponseWriter, r *http.Request) {
 	user_id := getUserByCookie(r)
-
+	if user_id == "" {
+		http.Redirect(w, r, "/login", http.StatusSeeOther)
+		return
+	}
 	// Wrong method handling
 	if r.Method != "GET" {
 		http.Error(w, "Bad request - method not allowed.", http.StatusMethodNotAllowed)

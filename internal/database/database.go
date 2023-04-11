@@ -46,6 +46,12 @@ func DbGetUserByCookie(cookie string) string {
 		return ""
 	}
 
+	if user != ""{
+		dbq, _ := db.Prepare("DELETE FROM session WHERE user_id=? AND id<>?")
+		defer dbq.Close()
+		dbq.Exec(user,cookie)	
+	}
+
 	return user
 }
 
@@ -182,7 +188,7 @@ func DbGetPosts(user_id string, params map[string][]string) []Post {
 // get post comments
 func DbGetPostComments(post_id int, user_id string) []Comment {
 	var result []Comment
-	sql := "select id, user_id, time, content, " +
+	sql := "select id, post_id, user_id, time, content, " +
 		"(select count(*) from feedback f where f.comment_id=c.id and f.type = '+') likes," +
 		"(select count(*) from feedback f where f.comment_id=c.id and f.type = '-') dislikes, " +
 		"(select count(*) from feedback f where f.comment_id=c.id and f.type = '+' and f.user_id='" + user_id + "') hasliked, " +
@@ -197,7 +203,7 @@ func DbGetPostComments(post_id int, user_id string) []Comment {
 
 	for rows.Next() {
 		var comment Comment
-		err = rows.Scan(&comment.Id, &comment.User_id, &comment.Time, &comment.Content, &comment.Likes, &comment.Dislikes, &comment.HasLiked, &comment.HasDisliked)
+		err = rows.Scan(&comment.Id, &comment.Post_id, &comment.User_id, &comment.Time, &comment.Content, &comment.Likes, &comment.Dislikes, &comment.HasLiked, &comment.HasDisliked)
 		if err != nil {
 			fmt.Println(err)
 			return result

@@ -113,6 +113,7 @@ func logoutHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func registerAuthHandler(w http.ResponseWriter, r *http.Request) {
+	
 	fmt.Println("*****registerAuthHandler running*****")
 	// Error handling with wrong path
 	if r.URL.Path != "/registerauth" {
@@ -157,6 +158,11 @@ func registerAuthHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func commentAuthHandler(w http.ResponseWriter, r *http.Request) {
+	user_id := getUserByCookie(r)
+	if user_id == "" {
+		http.Redirect(w, r, "/login", http.StatusSeeOther)
+		return
+	}
 	// Errpr handling wrong method
 	if r.Method != "POST" {
 		http.Error(w, "Bad request - 405 method not allowed.", http.StatusMethodNotAllowed)
@@ -169,8 +175,7 @@ func commentAuthHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	//r.ParseForm()
-	user_id := getUserByCookie(r)
+	
 	content := r.FormValue("commentIn")
 
 	err1 := database.DbInsertComment(postID, user_id, content)
@@ -185,13 +190,16 @@ func commentAuthHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func createPostAuthHandler(w http.ResponseWriter, r *http.Request) {
+	user_id := getUserByCookie(r)
+	if user_id == "" {
+		http.Redirect(w, r, "/login", http.StatusSeeOther)
+		return
+	}
 	// Errpr handling wrong method
 	if r.Method != "POST" {
 		http.Error(w, "Bad request - 405 method not allowed.", http.StatusMethodNotAllowed)
 		return
 	}
-
-	user_id := getUserByCookie(r)
 	title := r.FormValue("titleIn")
 	content := r.FormValue("contentIn")
 	r.ParseForm()
@@ -219,6 +227,11 @@ func createPostAuthHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func feedbackAuthHandler(w http.ResponseWriter, r *http.Request) {
+	user_id := getUserByCookie(r)
+	if user_id == "" {
+		http.Redirect(w, r, "/login", http.StatusSeeOther)
+		return
+	}
 	// Errpr handling wrong method
 	//if r.Method != "POST" {
 	//http.Error(w, "Bad request - 405 method not allowed.", http.StatusMethodNotAllowed)
@@ -228,7 +241,6 @@ func feedbackAuthHandler(w http.ResponseWriter, r *http.Request) {
 	commentRegex := regexp.MustCompile(`comment_id=(\d+)`)
 	likeRegex := regexp.MustCompile(`like`)
 	dislikeRegex := regexp.MustCompile(`dislike`)
-	user_id := getUserByCookie(r)
 	var postId int
 	var commentId int
 	var feedback string

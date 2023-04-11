@@ -23,6 +23,7 @@ type Post struct {
 
 type Comment struct {
 	Id          int
+	Post_id		int
 	User_id     string
 	Time        string
 	Content     string
