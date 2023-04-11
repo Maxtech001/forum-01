@@ -3,6 +3,7 @@ package server
 import (
 	"fmt"
 	"net/http"
+	"regexp"
 	"strconv"
 	"strings"
 	"time"
@@ -219,20 +220,80 @@ func createPostAuthHandler(w http.ResponseWriter, r *http.Request) {
 
 func feedbackAuthHandler(w http.ResponseWriter, r *http.Request) {
 	// Errpr handling wrong method
-	if r.Method != "GET" {
-		http.Error(w, "Bad request - 405 method not allowed.", http.StatusMethodNotAllowed)
-		return
+	//if r.Method != "POST" {
+	//http.Error(w, "Bad request - 405 method not allowed.", http.StatusMethodNotAllowed)
+	//return
+	//}
+	postRegex := regexp.MustCompile(`post_id=(\d+)`)
+	commentRegex := regexp.MustCompile(`comment_id=(\d+)`)
+	likeRegex := regexp.MustCompile(`like`)
+	dislikeRegex := regexp.MustCompile(`dislike`)
+	user_id := getUserByCookie(r)
+	var postId int
+	var commentId int
+	var feedback string
+
+	if postRegex.MatchString(r.URL.Path) {
+		postID, err := strconv.Atoi(postRegex.FindStringSubmatch(r.URL.Path)[1])
+		if err != nil {
+			http.Error(w, "Bad request - invalid post ID.", http.StatusBadRequest)
+			return
+		}
+		postId = postID
+		// Check if user liked or disliked the post
+		if dislikeRegex.MatchString(r.URL.Path) {
+			feedback = "-"
+		} else if likeRegex.MatchString(r.URL.Path) {
+			feedback = "+"
+		}
+	} else if commentRegex.MatchString(r.URL.Path) {
+		commentID, err := strconv.Atoi(commentRegex.FindStringSubmatch(r.URL.Path)[1])
+		if err != nil {
+			http.Error(w, "Bad request - invalid comment ID.", http.StatusBadRequest)
+			return
+		}
+		commentId = commentID
+		if dislikeRegex.MatchString(r.URL.Path) {
+			feedback = "-"
+		} else if likeRegex.MatchString(r.URL.Path) {
+			feedback = "+"
+		}
 	}
-	/* TODO - URList (nt /feedbackauth/post_id=12/like) välja lugeda feedbacki tüüp,
-	// kas tegu on postituse või kommentaariga (saab kohe muutuja id kätte URList) ja mis on selle ID
-	// Auth template tahad postituse ID-d, et saata inimene tagasi, ehk kommentaari laikimisel tuleb see küsida andmebaasist
 
-	r.ParseForm()
-
-	err := tmpl.ExecuteTemplate(w, "feedbackauth", postID)
+	err1 := database.DbInsertFeedback(postId, commentId, user_id, feedback)
+	if err1 != nil {
+		fmt.Println("DbInsertfeedback Error")
+	}
+	err := tmpl.ExecuteTemplate(w, "feedbackauth", postId)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
-	*/
 }
+
+//func DbInsertFeedback(post_id, comment_id int, user_id, ftype string) error {
+//fbq, err := db.Prepare("INSERT INTO feedback(post_id, comment_id, user_id, type) values(?, ?, ?, ?)")
+//if err != nil {
+//return err
+//}
+//defer fbq.Close()
+//_, err = fbq.Exec(post_id, comment_id, user_id, ftype)
+//if err != nil {
+//return err
+//
+//}
+//
+//return nil
+//}
+/* TODO - URList (nt /feedbackauth/post_id=12/like) välja lugeda feedbacki tüüp,
+// kas tegu on postituse või kommentaariga (saab kohe muutuja id kätte URList) ja mis on selle ID
+// Auth template tahad postituse ID-d, et saata inimene tagasi, ehk kommentaari laikimisel tuleb see küsida andmebaasist
+
+r.ParseForm()
+
+err := tmpl.ExecuteTemplate(w, "feedbackauth", postID)
+if err != nil {
+	http.Error(w, err.Error(), http.StatusInternalServerError)
+	return
+}
+*/
