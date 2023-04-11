@@ -471,6 +471,17 @@ a {
     white-space: pre-line;
 }
 
+.like:hover .icon-base,
+.like .icon-hover {
+    display: none;
+    color: #2F3C7E
+}
+
+.like:hover .icon-hover {
+    display: inline;
+    color: #0D1C5C;
+}
+
 .media-options a {
     display: flex;
     align-items: center;

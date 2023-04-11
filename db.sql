@@ -27,6 +27,7 @@ INSERT INTO comment VALUES(4,12,'kretesaak','2023-04-09 19:45:09','hellooo');
 CREATE TABLE feedback (id integer primary key, post_id integer, comment_id integer, user_id char(20), type char(1));
 INSERT INTO feedback VALUES(1,1,NULL,'margus','+');
 INSERT INTO feedback VALUES(2,2,NULL,'margus','-');
+INSERT INTO feedback VALUES(3,12,NULL,'kretesaak','+');
 CREATE TABLE post_tag (id integer primary key, post_id integer, tag_id integer);
 INSERT INTO post_tag VALUES(1,2,1);
 INSERT INTO post_tag VALUES(2,2,2);
@@ -65,6 +66,5 @@ INSERT INTO user VALUES('myusername65','blabla@gmail.com','$2a$14$joJNQ5q3S9lwzQ
 INSERT INTO user VALUES('aabits','quick@gmail.com','$2a$14$e93tijQQN3gmcKNQBbKppODNv7sX6vOx5WxdJFMQA6bPIptVXyA1e$2a$14$C17Pl8hj.P./byGOcCU/l.yk2joAIENAA/4zwkpdfwe5ix6.BYSuW');
 INSERT INTO user VALUES('kretesaak','krete@saak.ee','$2a$14$4CWOPDLHFW7nWK9Hnh6XtuJVSUiY5P/.A4j79XKMCvvyTxjEPZqHK$2a$14$VVlhOuitvGvqRmK6AIGTtuUUnCaRlAD6AXrGwFBCMu.tyTaZ0vUQi');
 CREATE TABLE session (id char(64) primary key, user_id char(20), expires datetime);
-INSERT INTO session VALUES('1a4eae2b-93c4-4fd7-843e-344c69480442','test01','2023-04-10 13:49:16');
-INSERT INTO session VALUES('136831ca-2427-4890-9394-4ee31a4cf467','kretesaak','2023-04-10 16:44:45');
+INSERT INTO session VALUES('2745a69c-72b5-48fa-a506-4d36263523d2','kretesaak','2023-04-12 08:54:18');
 COMMIT;

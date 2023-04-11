@@ -1,0 +1,25 @@
+{{define "hasliked-disliked"}}
+<div class="post-feedback" data-bs-toggle="tooltip" data-bs-placement="bottom"
+    data-bs-title="You can only give your feedback once">
+    <div class="feedback-item">
+        <p>
+            {{ .Likes}}
+        </p>
+        {{ if ne .HasLiked 0 }}
+        <i class="bi bi-hand-thumbs-up-fill" style="font-size: 1.5rem;"></i>
+        {{ else }}
+        <i class="bi bi-hand-thumbs-up" style="font-size: 1.5rem;"></i>
+        {{ end }}
+    </div>
+    <div class="feedback-item">
+        <p>
+            {{ .Dislikes}}
+        </p>
+        {{ if ne .HasDisliked 0 }}
+        <i class="bi bi-hand-thumbs-down-fill" style="font-size: 1.5rem;"></i>
+        {{ else }}
+        <i class="bi bi-hand-thumbs-down" style="font-size: 1.5rem;"></i>
+        {{ end }}
+    </div>
+</div>
+{{ end }}
