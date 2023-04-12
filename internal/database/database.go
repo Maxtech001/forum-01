@@ -208,6 +208,7 @@ func DbGetPostComments(post_id int, user_id string) []Comment {
 			fmt.Println(err)
 			return result
 		}
+		comment.Post_id = post_id
 		result = append(result, comment)
 	}
 	return result

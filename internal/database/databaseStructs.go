@@ -23,7 +23,6 @@ type Post struct {
 
 type Comment struct {
 	Id          int
-	Post_id		int
 	User_id     string
 	Time        string
 	Content     string
@@ -31,6 +30,7 @@ type Comment struct {
 	Dislikes    int
 	HasLiked    int
 	HasDisliked int
+	Post_id     int
 }
 
 type Tag struct {

@@ -113,7 +113,7 @@ func logoutHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func registerAuthHandler(w http.ResponseWriter, r *http.Request) {
-	
+
 	fmt.Println("*****registerAuthHandler running*****")
 	// Error handling with wrong path
 	if r.URL.Path != "/registerauth" {
@@ -175,18 +175,18 @@ func commentAuthHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	
 	content := r.FormValue("commentIn")
 
 	err1 := database.DbInsertComment(postID, user_id, content)
 	if err1 != nil {
 		fmt.Println("DbInsertComment Error")
 	}
-	err = tmpl.ExecuteTemplate(w, "commentauth", postID)
-	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
-		return
-	}
+	http.Redirect(w, r, "/post/"+strconv.Itoa(postID), http.StatusSeeOther)
+	//err = tmpl.ExecuteTemplate(w, "commentauth", postID)
+	//if err != nil {
+	//http.Error(w, err.Error(), http.StatusInternalServerError)
+	//return
+	//}
 }
 
 func createPostAuthHandler(w http.ResponseWriter, r *http.Request) {
@@ -244,27 +244,36 @@ func feedbackAuthHandler(w http.ResponseWriter, r *http.Request) {
 	var postId int
 	var commentId int
 	var feedback string
+	var postnr int
 
-	if postRegex.MatchString(r.URL.Path) {
-		postID, err := strconv.Atoi(postRegex.FindStringSubmatch(r.URL.Path)[1])
-		if err != nil {
-			http.Error(w, "Bad request - invalid post ID.", http.StatusBadRequest)
-			return
-		}
-		postId = postID
-		// Check if user liked or disliked the post
-		if dislikeRegex.MatchString(r.URL.Path) {
-			feedback = "-"
-		} else if likeRegex.MatchString(r.URL.Path) {
-			feedback = "+"
-		}
-	} else if commentRegex.MatchString(r.URL.Path) {
+	if commentRegex.MatchString(r.URL.Path) {
 		commentID, err := strconv.Atoi(commentRegex.FindStringSubmatch(r.URL.Path)[1])
 		if err != nil {
 			http.Error(w, "Bad request - invalid comment ID.", http.StatusBadRequest)
 			return
 		}
 		commentId = commentID
+		postID, err := strconv.Atoi(postRegex.FindStringSubmatch(r.URL.Path)[1])
+		if err != nil {
+			http.Error(w, "Bad request - invalid post ID.", http.StatusBadRequest)
+			return
+		}
+		postnr = postID
+		if dislikeRegex.MatchString(r.URL.Path) {
+			feedback = "-"
+		} else if likeRegex.MatchString(r.URL.Path) {
+			feedback = "+"
+		}
+
+	} else if postRegex.MatchString(r.URL.Path) {
+		postID, err := strconv.Atoi(postRegex.FindStringSubmatch(r.URL.Path)[1])
+		if err != nil {
+			http.Error(w, "Bad request - invalid post ID.", http.StatusBadRequest)
+			return
+		}
+		postId = postID
+		postnr = postID
+		// Check if user liked or disliked the post
 		if dislikeRegex.MatchString(r.URL.Path) {
 			feedback = "-"
 		} else if likeRegex.MatchString(r.URL.Path) {
@@ -276,11 +285,7 @@ func feedbackAuthHandler(w http.ResponseWriter, r *http.Request) {
 	if err1 != nil {
 		fmt.Println("DbInsertfeedback Error")
 	}
-	err := tmpl.ExecuteTemplate(w, "feedbackauth", postId)
-	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
-		return
-	}
+	http.Redirect(w, r, "/post/"+strconv.Itoa(postnr), http.StatusSeeOther)
 }
 
 //func DbInsertFeedback(post_id, comment_id int, user_id, ftype string) error {
