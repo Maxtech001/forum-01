@@ -46,10 +46,10 @@ func DbGetUserByCookie(cookie string) string {
 		return ""
 	}
 
-	if user != ""{
+	if user != "" {
 		dbq, _ := db.Prepare("DELETE FROM session WHERE user_id=? AND id<>?")
 		defer dbq.Close()
-		dbq.Exec(user,cookie)	
+		dbq.Exec(user, cookie)
 	}
 
 	return user

@@ -16,6 +16,7 @@ func main() {
 	db, err := database.InitDB()
 
 	if err != nil {
+
 		log.Fatalf("Internal server error - %v", http.StatusInternalServerError)
 		return
 	}
@@ -38,11 +39,10 @@ func main() {
 		log.Fatalf("Internal server error - %v", http.StatusInternalServerError)
 		return
 	}
-	fmt.Println("Server starting on port", server.Port)
-	fmt.Println("\nOpen http://localhost:" + server.Port + "/ in browser")
+	fmt.Println("Server starting...")
+	fmt.Println("\nOpen http://localhost:" + "with the specified port in browser")
 	fmt.Println("\nCtrl + C to close server")
 
-	//database.TestDbStuff()
 	server.StartServer()
 
 }
