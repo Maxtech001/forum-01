@@ -10,7 +10,7 @@ import (
 )
 
 var (
-	Port = "5050" // default port
+	Port = "8080" // default port
 	tmpl *template.Template
 	mux  *http.ServeMux
 )

@@ -1,1 +1,0 @@
-Uue kasutaja kinnitamine
