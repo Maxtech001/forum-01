@@ -53,3 +53,8 @@ type Postpage struct {
 	User_id string
 	Post    Post
 }
+
+type Aboutpage struct {
+	User_id string
+	Content string
+}

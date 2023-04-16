@@ -37,6 +37,7 @@ func StartServer() {
 	mux.HandleFunc("/commentauth/", commentAuthHandler)      // comment authentication handling
 	mux.HandleFunc("/feedbackauth/", feedbackAuthHandler)    // feedback authentication handling
 	mux.HandleFunc("/createpostauth", createPostAuthHandler) //successful post authentication page
+	mux.HandleFunc("/aboutus", aboutUsHandler) 				 //about us page
 
 	// Serving up files
 	mux.Handle("/styles/", http.StripPrefix("/styles/", http.FileServer(http.Dir("./styles/")))) // css serving
