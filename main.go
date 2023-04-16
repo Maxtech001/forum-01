@@ -40,7 +40,7 @@ func main() {
 		return
 	}
 	fmt.Println("Server starting...")
-	fmt.Println("\nOpen http://localhost:" + "with the specified port in browser")
+	fmt.Println("\nOpen http://localhost:" + " with the specified port in browser")
 	fmt.Println("\nCtrl + C to close server")
 
 	server.StartServer()

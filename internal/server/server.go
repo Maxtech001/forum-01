@@ -10,14 +10,13 @@ import (
 )
 
 var (
-	Port = "8080" // default port
+	Port = "5050" // default port
 	tmpl *template.Template
 	mux  *http.ServeMux
 )
 
 // Start the server
 func StartServer() {
-	// tmpl = template.Must(template.ParseGlob("templates/*.html"))
 	// Templating with custom time-helper function
 	tmpl = template.Must(template.New("").Funcs(template.FuncMap{
 		"formatTime": formatTime,

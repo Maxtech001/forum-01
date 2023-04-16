@@ -25,18 +25,6 @@ docker container run -p 5050:8080 --detach --name forum-container forum
 docker ps -a
 ```
 
-5. See inside the container:
-
-```bash
-docker exec -it forum-container /bin/bash
-```
-
-6. And to see the file system:
-
-```bash
-ls -l
-```
-
 
 Or use a bash script to build and run the image:
 
