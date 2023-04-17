@@ -1,37 +1,33 @@
 # Groupie Tracker Filters
 
 ## 📚 Introduction
-Groupie Trackers is a website that uses data from an API to diplay information about different bands. The information includes name(s), image, when they began their activity, the date of their first album, the members and their tour dates and locations. The dates and locations are diplayed on a map.
+This project consists in creating a web forum that allows :
 
-Groupie Tracker Filters consists on letting the user filter the artists/bands that will be shown.
+- communication between users
+- associating categories to posts
+- liking and disliking posts and comments
+- filtering posts
 
-Project must incorporate at least these four filters:
-- filter by creation date
-- filter by first album date
-- filter by number of members
-- filter by locations of concerts
-
-Filters must be of at least these two types:
-- a range filter (filters the results between two values)
-- a check box filter (filters the results by one or multiple selection)
+Users need to register in order to create posts, add comments and like or dislike posts and comments.
 
 ## 👟 Requirements to run
 
-- Go >= 1.18
-- Only standard Go packages were used
+- Docker engine must be installed
 - Bash terminal window
+- Web browser
 
 ## 🏃‍♂️ Running the program
-
-Just use 
-`go run .`
-Then open the link http://localhost:8080/
+----------------------------------
+TODO:
+Dockeriga käivitamise juhend
+----------------------------------
+After docker image has started open the link http://localhost:8080/
 
 ## 🧪 Testing the program
-Audit can be found [here](https://github.com/01-edu/public/blob/master/subjects/groupie-tracker/filters/audit.md)
+Audit can be found [here](https://github.com/01-edu/public/tree/master/subjects/forum/audit)
 
 ## ✏️ Notes
-The server is written in Go. HTML, CSS and JavaScript are used for frontend. JavaScript is used only for displaying tour infomation on the map.
+The server is written in Go. HTML, CSS and JavaScript are used for frontend. SQLite database is used to store data.
 
 ## 🤴 Authors
 @Brooklyn_95
@@ -39,3 +35,5 @@ The server is written in Go. HTML, CSS and JavaScript are used for frontend. Jav
 @kretesaak
 
 @margus.aid
+
+@GhanBuriGhan
