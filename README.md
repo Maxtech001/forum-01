@@ -46,7 +46,7 @@ Make sure you have all the necessary third-party packages installed.
 ```go
 go run .
 ```
-The application will start on port 8080. Go to localhost:8080 on your browser. \
+The application will start on port 8080. Go to localhost:8080 on your browser.
 
 
 ## 🧪 Testing the program
