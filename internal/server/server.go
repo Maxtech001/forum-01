@@ -17,7 +17,6 @@ var (
 
 // Start the server
 func StartServer() {
-	// tmpl = template.Must(template.ParseGlob("templates/*.html"))
 	// Templating with custom time-helper function
 	tmpl = template.Must(template.New("").Funcs(template.FuncMap{
 		"formatTime": formatTime,

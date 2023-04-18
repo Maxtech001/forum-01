@@ -41,3 +41,12 @@ func getPostPageContent(pID int, u string) (error, database.Postpage) {
 		Post:    post,
 	}
 }
+
+// Returning a new created user from database
+func newUser(u, e, p string) database.User {
+	return database.User{
+		Id:       u,
+		Email:    e,
+		Password: p,
+	}
+}

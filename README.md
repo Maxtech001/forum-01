@@ -35,5 +35,3 @@ The server is written in Go. HTML, CSS and JavaScript are used for frontend. SQL
 @kretesaak
 
 @margus.aid
-
-@GhanBuriGhan

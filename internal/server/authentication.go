@@ -9,7 +9,6 @@ import (
 	"time"
 
 	"01.kood.tech/git/kretesaak/forum/internal/database"
-	"01.kood.tech/git/kretesaak/forum/internal/registration"
 	"github.com/gofrs/uuid"
 )
 
@@ -36,7 +35,6 @@ func loginAuthHandler(w http.ResponseWriter, r *http.Request) {
 
 	cp, user_id := database.DbAuthenticateUser(email, password)
 
-	// TODO või siis email või password on vale indikaator saata kasutajale
 	if !cp {
 		fmt.Println("Email or password wrong")
 		tmpl.ExecuteTemplate(w, "login", "Can't find a user with this email and password")
@@ -134,14 +132,14 @@ func registerAuthHandler(w http.ResponseWriter, r *http.Request) {
 	/*
 		Database lookup
 	*/
-	rf := registration.NewUser(username, email, password)
+	rf := newUser(username, email, password)
 
 	// Checking email and username
 	ux := database.DbUserIdExist(rf.Id)
 	fmt.Println("Is username:", ux)
 	ex := database.DbEmailExist(rf.Email)
 	fmt.Println("Is email:", ex)
-	// TODO see indikaator saata kasutajale
+
 	if ux || ex {
 		fmt.Println("Email or username already exists")
 		tmpl.ExecuteTemplate(w, "register", "Please choose another email and/or username because it already exists")
