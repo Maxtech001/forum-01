@@ -1,0 +1,11 @@
+.git
+.gitignore
+*.md
+!README.md
+Dockerfile
+.dockerignore
+dockersetup.sh
+/.vscode
+db/
+dbcreate.sh
+dbdump.sh

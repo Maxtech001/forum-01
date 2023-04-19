@@ -544,3 +544,34 @@ a.google span {
     }
 
 }
+
+.md-block {
+    text-align: left;
+}
+.md-block h1 {
+    text-align: center;
+}
+.md-block h2 {
+    margin-top: 16px;
+    margin-bottom: 8px;;
+}
+
+.container2 {
+    margin: 0 auto;
+    max-width: 800px;
+    padding: 20px;
+    text-align: center;
+    background-color: #FFF;
+    border-radius: 12px;
+    box-shadow: 0px 0px 25px rgba(0, 0, 0, 0.1);
+    font-family: "Open Sans";
+}
+
+.container2 h3 {
+    margin-top: 16px;
+    margin-bottom: 4px;
+}
+
+.container2 p {
+    font-size: 18px;
+}

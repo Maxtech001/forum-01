@@ -30,6 +30,7 @@ type Comment struct {
 	Dislikes    int
 	HasLiked    int
 	HasDisliked int
+	Post_id     int
 }
 
 type Tag struct {
@@ -51,4 +52,9 @@ type Createpost struct {
 type Postpage struct {
 	User_id string
 	Post    Post
+}
+
+type Aboutpage struct {
+	User_id string
+	Content string
 }

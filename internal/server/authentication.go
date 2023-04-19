@@ -3,12 +3,12 @@ package server
 import (
 	"fmt"
 	"net/http"
+	"regexp"
 	"strconv"
 	"strings"
 	"time"
 
 	"01.kood.tech/git/kretesaak/forum/internal/database"
-	"01.kood.tech/git/kretesaak/forum/internal/registration"
 	"github.com/gofrs/uuid"
 )
 
@@ -35,7 +35,6 @@ func loginAuthHandler(w http.ResponseWriter, r *http.Request) {
 
 	cp, user_id := database.DbAuthenticateUser(email, password)
 
-	// TODO või siis email või password on vale indikaator saata kasutajale
 	if !cp {
 		fmt.Println("Email or password wrong")
 		tmpl.ExecuteTemplate(w, "login", "Can't find a user with this email and password")
@@ -112,6 +111,7 @@ func logoutHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func registerAuthHandler(w http.ResponseWriter, r *http.Request) {
+
 	fmt.Println("*****registerAuthHandler running*****")
 	// Error handling with wrong path
 	if r.URL.Path != "/registerauth" {
@@ -132,14 +132,14 @@ func registerAuthHandler(w http.ResponseWriter, r *http.Request) {
 	/*
 		Database lookup
 	*/
-	rf := registration.NewUser(username, email, password)
+	rf := newUser(username, email, password)
 
 	// Checking email and username
 	ux := database.DbUserIdExist(rf.Id)
 	fmt.Println("Is username:", ux)
 	ex := database.DbEmailExist(rf.Email)
 	fmt.Println("Is email:", ex)
-	// TODO see indikaator saata kasutajale
+
 	if ux || ex {
 		fmt.Println("Email or username already exists")
 		tmpl.ExecuteTemplate(w, "register", "Please choose another email and/or username because it already exists")
@@ -156,6 +156,11 @@ func registerAuthHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func commentAuthHandler(w http.ResponseWriter, r *http.Request) {
+	user_id := getUserByCookie(r)
+	if user_id == "" {
+		http.Redirect(w, r, "/login", http.StatusSeeOther)
+		return
+	}
 	// Errpr handling wrong method
 	if r.Method != "POST" {
 		http.Error(w, "Bad request - 405 method not allowed.", http.StatusMethodNotAllowed)
@@ -168,29 +173,31 @@ func commentAuthHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	//r.ParseForm()
-	user_id := getUserByCookie(r)
 	content := r.FormValue("commentIn")
 
 	err1 := database.DbInsertComment(postID, user_id, content)
 	if err1 != nil {
 		fmt.Println("DbInsertComment Error")
 	}
-	err = tmpl.ExecuteTemplate(w, "commentauth", postID)
-	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
-		return
-	}
+	http.Redirect(w, r, "/post/"+strconv.Itoa(postID), http.StatusSeeOther)
+	//err = tmpl.ExecuteTemplate(w, "commentauth", postID)
+	//if err != nil {
+	//http.Error(w, err.Error(), http.StatusInternalServerError)
+	//return
+	//}
 }
 
 func createPostAuthHandler(w http.ResponseWriter, r *http.Request) {
+	user_id := getUserByCookie(r)
+	if user_id == "" {
+		http.Redirect(w, r, "/login", http.StatusSeeOther)
+		return
+	}
 	// Errpr handling wrong method
 	if r.Method != "POST" {
 		http.Error(w, "Bad request - 405 method not allowed.", http.StatusMethodNotAllowed)
 		return
 	}
-
-	user_id := getUserByCookie(r)
 	title := r.FormValue("titleIn")
 	content := r.FormValue("contentIn")
 	r.ParseForm()
@@ -218,21 +225,90 @@ func createPostAuthHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func feedbackAuthHandler(w http.ResponseWriter, r *http.Request) {
+	user_id := getUserByCookie(r)
+	if user_id == "" {
+		http.Redirect(w, r, "/login", http.StatusSeeOther)
+		return
+	}
 	// Errpr handling wrong method
-	if r.Method != "GET" {
-		http.Error(w, "Bad request - 405 method not allowed.", http.StatusMethodNotAllowed)
-		return
-	}
-	/* TODO - URList (nt /feedbackauth/post_id=12/like) välja lugeda feedbacki tüüp,
-	// kas tegu on postituse või kommentaariga (saab kohe muutuja id kätte URList) ja mis on selle ID
-	// Auth template tahad postituse ID-d, et saata inimene tagasi, ehk kommentaari laikimisel tuleb see küsida andmebaasist
+	//if r.Method != "POST" {
+	//http.Error(w, "Bad request - 405 method not allowed.", http.StatusMethodNotAllowed)
+	//return
+	//}
+	postRegex := regexp.MustCompile(`post_id=(\d+)`)
+	commentRegex := regexp.MustCompile(`comment_id=(\d+)`)
+	likeRegex := regexp.MustCompile(`like`)
+	dislikeRegex := regexp.MustCompile(`dislike`)
+	var postId int
+	var commentId int
+	var feedback string
+	var postnr int
 
-	r.ParseForm()
+	if commentRegex.MatchString(r.URL.Path) {
+		commentID, err := strconv.Atoi(commentRegex.FindStringSubmatch(r.URL.Path)[1])
+		if err != nil {
+			http.Error(w, "Bad request - invalid comment ID.", http.StatusBadRequest)
+			return
+		}
+		commentId = commentID
+		postID, err := strconv.Atoi(postRegex.FindStringSubmatch(r.URL.Path)[1])
+		if err != nil {
+			http.Error(w, "Bad request - invalid post ID.", http.StatusBadRequest)
+			return
+		}
+		postnr = postID
+		if dislikeRegex.MatchString(r.URL.Path) {
+			feedback = "-"
+		} else if likeRegex.MatchString(r.URL.Path) {
+			feedback = "+"
+		}
 
-	err := tmpl.ExecuteTemplate(w, "feedbackauth", postID)
-	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
-		return
+	} else if postRegex.MatchString(r.URL.Path) {
+		postID, err := strconv.Atoi(postRegex.FindStringSubmatch(r.URL.Path)[1])
+		if err != nil {
+			http.Error(w, "Bad request - invalid post ID.", http.StatusBadRequest)
+			return
+		}
+		postId = postID
+		postnr = postID
+		// Check if user liked or disliked the post
+		if dislikeRegex.MatchString(r.URL.Path) {
+			feedback = "-"
+		} else if likeRegex.MatchString(r.URL.Path) {
+			feedback = "+"
+		}
 	}
-	*/
+
+	err1 := database.DbInsertFeedback(postId, commentId, user_id, feedback)
+	if err1 != nil {
+		fmt.Println("DbInsertfeedback Error")
+	}
+	http.Redirect(w, r, "/post/"+strconv.Itoa(postnr), http.StatusSeeOther)
 }
+
+//func DbInsertFeedback(post_id, comment_id int, user_id, ftype string) error {
+//fbq, err := db.Prepare("INSERT INTO feedback(post_id, comment_id, user_id, type) values(?, ?, ?, ?)")
+//if err != nil {
+//return err
+//}
+//defer fbq.Close()
+//_, err = fbq.Exec(post_id, comment_id, user_id, ftype)
+//if err != nil {
+//return err
+//
+//}
+//
+//return nil
+//}
+/* TODO - URList (nt /feedbackauth/post_id=12/like) välja lugeda feedbacki tüüp,
+// kas tegu on postituse või kommentaariga (saab kohe muutuja id kätte URList) ja mis on selle ID
+// Auth template tahad postituse ID-d, et saata inimene tagasi, ehk kommentaari laikimisel tuleb see küsida andmebaasist
+
+r.ParseForm()
+
+err := tmpl.ExecuteTemplate(w, "feedbackauth", postID)
+if err != nil {
+	http.Error(w, err.Error(), http.StatusInternalServerError)
+	return
+}
+*/
