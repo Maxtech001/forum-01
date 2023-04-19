@@ -175,7 +175,7 @@ func aboutUsHandler(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
-	err = tmpl.ExecuteTemplate(w, "about", database.Aboutpage{user_id, string(readme)})
+	err = tmpl.ExecuteTemplate(w, "about", database.Aboutpage{User_id: user_id, Content: string(readme)})
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
