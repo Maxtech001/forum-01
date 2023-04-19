@@ -74,14 +74,14 @@
                         </div>
                     </div>
 
-                    <div class="form-floating">
+                    <div class="form-floating anchor" id="my-anchor">
                     <!-- pattern="^(?=.*?[A-Z])(?=.*?[a-z])(?=.*?\d)(?=.*?[\W_]).{8,}$" -->
                         <input type="password" class="form-control password" id="passwordUp" name="passwordUp" required minlength="8" maxlength="20"
                         title="Must contain at least one uppercase letter, one lowercase letter, one number, and one symbol.">
-                        <i class='bx bx-hide eye-icon'></i>
+                        <i class='bx bx-hide eye-icon' anchor="my-anchor"></i>
                         <label for="passwordUp">Password</label>
                         <div class="invalid-feedback">
-                            Password needs to be at least 8 characters long and contain at least one uppercase letter, one lowercase letter, one number
+                            Password needs to be at least 8 characters long and contain at least an uppercase and lowercase letter and a number
                         </div>
                     </div>
                 </div>
