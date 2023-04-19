@@ -1,7 +1,7 @@
 {{define "register"}}
 <!DOCTYPE html>
 <html lang="en">
-
+    
 <head>
     <meta charset="UTF-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
@@ -65,22 +65,21 @@
                     </div>
 
                     <div class="form-floating">
-                        <input type="text" class="form-control" id="usernameUp" name="usernameUp" required minlength="6" maxlength="20" pattern="^(?=.*[A-Za-z])(?=.*\d)[A-Za-z\d]+$" 
+                        <input type="text" class="form-control" id="usernameUp" name="usernameUp" required minlength="6" maxlength="20" pattern="^(?=.*[A-Za-z])[A-Za-z\d]+$" 
                         title="Must contain at least one letter and one number. Symbols are not allowed.">
                         <label for="usernameUp">Username</label>
                         <div class="invalid-feedback">
-                            Username needs to be between 6-20 characters long. Must contain at least one letter and one number. Symbols are not allowed
+                            Username needs to be between 6-20 characters and contain letters
                         </div>
                     </div>
 
                     <div class="form-floating">
-                    <!-- pattern="^(?=.*?[A-Z])(?=.*?[a-z])(?=.*?\d)(?=.*?[\W_]).{8,}$" -->
-                        <input type="password" class="form-control password" id="passwordUp" name="passwordUp" required minlength="8" maxlength="20"
+                        <input type="password" class="form-control password" id="passwordUp" name="passwordUp" required minlength="8" maxlength="20" pattern="^(?=.*?[A-Z])(?=.*?[a-z])(?=.*?\d)(?=.*?[\W_]).{8,}$"
                         title="Must contain at least one uppercase letter, one lowercase letter, one number, and one symbol.">
-                        <i class='bx bx-hide eye-icon' anchor="my-anchor"></i>
+                        <i class='bx bx-hide eye-icon'></i>
                         <label for="passwordUp">Password</label>
                         <div class="invalid-feedback">
-                            Password needs to be at least 8 characters long and contain at least one uppercase letter, one lowercase letter, one number
+                            Password needs to be between 8-20 characters and contain at least an uppercase letter, lowercase letter, number, and symbol
                         </div>
                     </div>
                 </div>

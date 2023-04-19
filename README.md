@@ -1,4 +1,4 @@
-# Groupie Tracker Filters
+# Forum
 
 ## 📚 Introduction
 This project consists in creating a web forum that allows :

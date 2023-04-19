@@ -26,7 +26,7 @@ func mainPageHandler(w http.ResponseWriter, r *http.Request) {
 
 	// Error handling with wrong path
 	if r.URL.Path != "/" {
-		http.Error(w, "Bad request - 404 resource not found.", http.StatusNotFound)
+		tmpl.ExecuteTemplate(w, "error", user_id)
 		return
 	}
 	// Wrong method handling
@@ -75,7 +75,8 @@ func commentHandler(w http.ResponseWriter, r *http.Request) {
 
 	// If missing
 	if err != nil {
-		http.Error(w, "Bad request - post not found.", http.StatusNotFound)
+		tmpl.ExecuteTemplate(w, "error", user_id)
+		fmt.Println(http.StatusNotFound)
 		return
 	}
 
@@ -108,7 +109,8 @@ func postHandler(w http.ResponseWriter, r *http.Request) {
 
 	// If missing
 	if err != nil {
-		http.Error(w, "Bad request - post not found.", http.StatusNotFound)
+		tmpl.ExecuteTemplate(w, "error", user_id)
+		fmt.Println(http.StatusNotFound)
 		return
 	}
 
@@ -121,13 +123,13 @@ func postHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func createPostHandler(w http.ResponseWriter, r *http.Request) {
-	fmt.Println("*****createPostHandler running*****")
 	user_id := getUserByCookie(r)
 
 	if r.Method != "POST" {
 		// Error handling with wrong path
 		if r.URL.Path != "/createpost" {
-			http.Error(w, "Bad request - 404 resource not found.", http.StatusNotFound)
+			tmpl.ExecuteTemplate(w, "error", user_id)
+			fmt.Println(http.StatusNotFound)
 			return
 		}
 
@@ -140,45 +142,16 @@ func createPostHandler(w http.ResponseWriter, r *http.Request) {
 			http.Error(w, err.Error(), http.StatusInternalServerError)
 			return
 		}
-	} //else {
-	//user_id := getUserByCookie(r)
-	//title := r.FormValue("titleIn")
-	//content := r.FormValue("contentIn")
-	//r.ParseForm()
-	//tags2 := r.Form["tag"]
-	//var tags1 []int
-	//for _, i := range tags2 {
-	//j, err := strconv.Atoi(i)
-	//if err != nil {
-	//panic(err)
-	//}
-	//tags1 = append(tags1, j)
-	//}
-	//
-	//// Validate form data
-	//if title == "" || content == "" {
-	//http.Error(w, "Please fill in all fields", http.StatusBadRequest)
-	//return
-	//}
-	//
-	//err, post_id := database.DbInsertPost(user_id, title, content, tags1)
-	//if err != nil {
-	//fmt.Println("DbInsertpost Error")
-	//} else {
-	//fmt.Println("DbInsertpost Success:", post_id)
-	//}
-	//
-	//// Redirect to success page
-	//http.Redirect(w, r, "/createpostauth", http.StatusSeeOther)
-	//}
+	}
 }
 
 func loginHandler(w http.ResponseWriter, r *http.Request) {
-	fmt.Println("*****loginHandler running*****")
+	user_id := getUserByCookie(r)
 
 	// Error handling with wrong path
 	if r.URL.Path != "/login" {
-		http.Error(w, "Bad request - 404 resource not found.", http.StatusNotFound)
+		tmpl.ExecuteTemplate(w, "error", user_id)
+		fmt.Println(http.StatusNotFound)
 		return
 	}
 	// Wrong method handling
@@ -213,11 +186,12 @@ func aboutUsHandler(w http.ResponseWriter, r *http.Request) {
 // TODO ta teeb praegu miskipärast kaks korda seda päringut (teine on tühi), luua login ja reg endpoint erinevalt esialgu
 // registerAuthHandler creates new user in database
 func registerHandler(w http.ResponseWriter, r *http.Request) {
-	fmt.Println("*****registerHandler running*****")
+	user_id := getUserByCookie(r)
 
 	// Error handling with wrong path
 	if r.URL.Path != "/register" {
-		http.Error(w, "Bad request - 404 resource not found.", http.StatusNotFound)
+		tmpl.ExecuteTemplate(w, "error", user_id)
+		fmt.Println(http.StatusNotFound)
 		return
 	}
 	// Wrong method handling

@@ -29,7 +29,7 @@
             <div class="post-form-main">
                 <div class="post-form-fields">
                     <div class="form-floating">
-                        <input type="text" class="form-control" id="titleIn" name="titleIn" placeholder="Post title" required>
+                        <input type="text" class="form-control" id="titleIn" name="titleIn" placeholder="Post title" required maxlength="200">
                         <label for="titleIn">Title</label>
                         <div class="invalid-feedback">
                             Please add a title to your post.
@@ -38,7 +38,7 @@
 
                     <div class="form-floating">
                         <textarea type="text" class="form-control" id="contentIn" name="contentIn"
-                            placeholder="Post content" style="height: 100px" required></textarea>
+                            placeholder="Post content" style="height: 100px" required maxlength="5000"></textarea>
                         <label for="contentIn">Content</label>
                         <div class="invalid-feedback">
                             Please add the contents of your post.
