@@ -13,7 +13,6 @@ import (
 )
 
 func loginAuthHandler(w http.ResponseWriter, r *http.Request) {
-
 	// Error handling with wrong path
 	if r.URL.Path != "/loginauth" {
 		http.Error(w, "Bad request - 404 resource not found.", http.StatusNotFound)
@@ -37,7 +36,6 @@ func loginAuthHandler(w http.ResponseWriter, r *http.Request) {
 		tmpl.ExecuteTemplate(w, "login", "Can't find a user with this email and password")
 		return
 	}
-
 	/*
 		Cookie logic
 	*/
@@ -133,7 +131,7 @@ func registerAuthHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	// Inserting values into database
-	fmt.Println(database.DbInsertUser(rf))
+	database.DbInsertUser(rf)
 	// Going to login page
 	err := tmpl.ExecuteTemplate(w, "registerauth", nil)
 	if err != nil {

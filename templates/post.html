@@ -91,7 +91,7 @@
                     {{ end }}
                 </div>
             </div>
-            {{ if .User_id }}
+            {{ if and (.User_id) (not .Post.Comments) }}
             <a href="/comment/{{.Post.Id}}"><button type="button" class="btn btn-primary">Comment</button></a>
             {{ end }}
             {{ if .User_id}}
