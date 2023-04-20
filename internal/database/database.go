@@ -111,7 +111,6 @@ func DbGetSinglePost(post_id int, user_id string) Post {
 		result = post
 	}
 
-	//	fmt.Println(result)
 	return result
 }
 

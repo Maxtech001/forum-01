@@ -1,1 +1,0 @@
-Andmebaasi initimisega ja pärimisega seotud skriptid
