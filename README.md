@@ -20,6 +20,19 @@ We started working on the project at the beginning of March and we use Bootstrap
 
 ## 🏃‍♂️ Running the program
 
+### Terminal
+Make sure you have all the necessary third-party packages installed.
+
+Before you can run the code in terminal without docker image, you need to create a db:
+```bash
+ mkdir db && sh dbcreate.sh
+```
+And then you can run the code with:
+```go
+go run .
+```
+The application will start on port 8080. Go to localhost:8080 on your browser.
+
 ### 🐋 Docker
 
 1. Build the image:
@@ -42,23 +55,6 @@ sh dockersetup.sh
 
 The application will start on port 5050. Go to localhost:5050 on your browser.
 
-To see inside the container use:
-```bash
-docker exec -it forum /bin/bash
-```
-
-### Terminal
-Make sure you have all the necessary third-party packages installed.
-
-Before you can run the code in terminal without docker image, you need to create a db:
-```bash
- sh dbcreate.sh
-```
-And then you can run the code with:
-```go
-go run .
-```
-The application will start on port 8080. Go to localhost:8080 on your browser. \
 **The local database and the docker container one are different - they won't include anything you add to the other one!**
 
 ## 🧪 Testing the program
