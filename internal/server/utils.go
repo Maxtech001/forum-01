@@ -2,6 +2,7 @@ package server
 
 import (
 	"errors"
+	"net/http"
 	"time"
 
 	"01.kood.tech/git/kretesaak/forum/internal/database"
@@ -23,6 +24,7 @@ func getMainPageContent(u string, qparams map[string][]string) database.Mainpage
 	}
 }
 
+// Returning create post page content
 func getCreatePostPageContent(u string) database.Createpost {
 	return database.Createpost{
 		User_id: u,
@@ -30,6 +32,7 @@ func getCreatePostPageContent(u string) database.Createpost {
 	}
 }
 
+// Returning post page content
 func getPostPageContent(pID int, u string) (error, database.Postpage) {
 	post := database.DbGetSinglePost(pID, u)
 
@@ -49,4 +52,14 @@ func newUser(u, e, p string) database.User {
 		Email:    e,
 		Password: p,
 	}
+}
+
+func getUserByCookie(r *http.Request) string {
+	result := ""
+	cookie, err := r.Cookie("session")
+	if err != nil {
+		return result
+	}
+	result = database.DbGetUserByCookie(cookie.Value)
+	return result
 }

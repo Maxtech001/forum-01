@@ -12,9 +12,7 @@ import (
 )
 
 func main() {
-
 	db, err := database.InitDB()
-
 	if err != nil {
 
 		log.Fatalf("Internal server error - %v", http.StatusInternalServerError)
@@ -44,5 +42,4 @@ func main() {
 	fmt.Println("\nCtrl + C to close server")
 
 	server.StartServer()
-
 }

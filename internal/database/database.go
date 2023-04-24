@@ -35,6 +35,7 @@ func InitDB() (*sql.DB, error) {
 	return db, err
 }
 
+// Get username by cookie
 func DbGetUserByCookie(cookie string) string {
 
 	if cookie == "" {
@@ -55,6 +56,7 @@ func DbGetUserByCookie(cookie string) string {
 	return user
 }
 
+// Delete cookie
 func DbDeleteCookie(cookie string) {
 	dbq, _ := db.Prepare("DELETE FROM session WHERE id = ?")
 
@@ -62,12 +64,14 @@ func DbDeleteCookie(cookie string) {
 	dbq.Exec(cookie)
 }
 
+// Delete expired cookie
 func DbDeleteExpiredCookies() {
 	stmt, _ := db.Prepare("DELETE FROM session WHERE datetime(expires) < datetime('now') or expires is NULL")
 	defer stmt.Close()
 	stmt.Exec()
 }
 
+// Add new cookie
 func DbAddCookie(cookie, user_id string, exp time.Time) {
 	if user_id == "" {
 		fmt.Println("user_id missing, can't set cookie")
@@ -81,7 +85,7 @@ func DbAddCookie(cookie, user_id string, exp time.Time) {
 	dbq.Exec(cookie, user_id, dbtime)
 }
 
-// get single post
+// Get single post
 func DbGetSinglePost(post_id int, user_id string) Post {
 	var result Post
 	sql := "select id, user_id, time, title, content, " +
@@ -114,7 +118,7 @@ func DbGetSinglePost(post_id int, user_id string) Post {
 	return result
 }
 
-// get posts
+// Get posts (all or by filter)
 func DbGetPosts(user_id string, params map[string][]string) []Post {
 	var result []Post
 
@@ -184,7 +188,7 @@ func DbGetPosts(user_id string, params map[string][]string) []Post {
 
 }
 
-// get post comments
+// Get post comments
 func DbGetPostComments(post_id int, user_id string) []Comment {
 	var result []Comment
 	sql := "select id, post_id, user_id, time, content, " +
@@ -213,7 +217,7 @@ func DbGetPostComments(post_id int, user_id string) []Comment {
 	return result
 }
 
-// get all tags
+// Get all tags
 func DbGetTags() []Tag {
 	var result []Tag
 	rows, err := db.Query("SELECT id, name FROM tag")
@@ -235,7 +239,7 @@ func DbGetTags() []Tag {
 	return result
 }
 
-// get post tags
+// Get post tags
 func DbGetPostTags(post_id int) []Tag {
 	var result []Tag
 	rows, err := db.Query("SELECT pt.tag_id, t.name FROM post_tag pt LEFT JOIN tag t ON pt.tag_id = t.id WHERE pt.post_id=?", post_id)
@@ -257,7 +261,7 @@ func DbGetPostTags(post_id int) []Tag {
 	return result
 }
 
-// insert feedback
+// Insert feedback
 func DbInsertFeedback(post_id, comment_id int, user_id, ftype string) error {
 	fbq, err := db.Prepare("INSERT INTO feedback(post_id, comment_id, user_id, type) values(?, ?, ?, ?)")
 	if err != nil {
@@ -273,7 +277,7 @@ func DbInsertFeedback(post_id, comment_id int, user_id, ftype string) error {
 	return nil
 }
 
-// insert comment
+// Insert comment
 func DbInsertComment(post_id int, user_id, content string) error {
 	t := time.Now()
 	dbtime := t.Format("2006-01-02 15:04:05")
@@ -292,7 +296,7 @@ func DbInsertComment(post_id int, user_id, content string) error {
 	return nil
 }
 
-// insert new post and its tags
+// Insert new post and its tags
 func DbInsertPost(user_id, title, content string, tags []int) (error, int) {
 	t := time.Now()
 	dbtime := t.Format("2006-01-02 15:04:05")
@@ -333,7 +337,7 @@ func DbInsertPost(user_id, title, content string, tags []int) (error, int) {
 	return nil, post_id
 }
 
-// insert new user
+// Insert new user
 func DbInsertUser(user User) error {
 	stmt, err := db.Prepare("INSERT INTO user(id, email, password) values(?, ?, ?)")
 	if err != nil {
@@ -351,7 +355,7 @@ func DbInsertUser(user User) error {
 	return nil
 }
 
-// check if user exists
+// Check if user exists
 func DbGetUserByIdOrEmail(input string) []User {
 	var result []User
 	rows, err := db.Query("SELECT id, email, password FROM user WHERE id=? OR email=?", input, input)
@@ -373,7 +377,7 @@ func DbGetUserByIdOrEmail(input string) []User {
 	return result
 }
 
-// check if user with email exist
+// Check if user with email exist
 func DbEmailExist(input string) bool {
 	var usercount int
 
@@ -389,7 +393,7 @@ func DbEmailExist(input string) bool {
 	}
 }
 
-// check if user with isername exist
+// Check if user with username exist
 func DbUserIdExist(input string) bool {
 	var usercount int
 
@@ -405,6 +409,7 @@ func DbUserIdExist(input string) bool {
 	}
 }
 
+// Check if user email and password match with the ones in the db
 func DbAuthenticateUser(email, pwd string) (bool, string) {
 	result := false
 	var user, pw string

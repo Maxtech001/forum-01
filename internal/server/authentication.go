@@ -19,7 +19,7 @@ func loginAuthHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// Errpr handling wrong method
+	// Error handling wrong method
 	if r.Method != "POST" {
 		http.Error(w, "Bad request - 405 method not allowed.", http.StatusMethodNotAllowed)
 		return
@@ -63,7 +63,7 @@ func loginAuthHandler(w http.ResponseWriter, r *http.Request) {
 		database.DbAddCookie(cookie.Value, user_id, exp)
 	}
 
-	// login connection
+	// Login connection
 	err = tmpl.ExecuteTemplate(w, "loginauth", nil)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
@@ -72,25 +72,25 @@ func loginAuthHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func logoutHandler(w http.ResponseWriter, r *http.Request) {
-
 	// Error handling with wrong path
 	if r.URL.Path != "/logout" {
 		http.Error(w, "Bad request - 404 resource not found.", http.StatusNotFound)
 		return
 	}
 
-	// Errpr handling wrong method
+	// Error handling wrong method
 	if r.Method != "GET" {
 		http.Error(w, "Bad request - 405 method not allowed.", http.StatusMethodNotAllowed)
 		return
 	}
 
+	// Delete cookie
 	cookie, _ := r.Cookie("session")
 	database.DbDeleteCookie(cookie.Value)
 	cookie.MaxAge = -1
 	http.SetCookie(w, cookie)
 
-	// login connection
+	// Logout connection
 	err := tmpl.ExecuteTemplate(w, "logout", nil)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
@@ -99,19 +99,18 @@ func logoutHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func registerAuthHandler(w http.ResponseWriter, r *http.Request) {
-
 	// Error handling with wrong path
 	if r.URL.Path != "/registerauth" {
 		http.Error(w, "Bad request - 404 resource not found.", http.StatusNotFound)
 		return
 	}
-	// Errpr handling wrong method
+	// Error handling wrong method
 	if r.Method != "POST" {
 		http.Error(w, "Bad request - 405 method not allowed.", http.StatusMethodNotAllowed)
 		return
 	}
 	/*
-		Front-end lookup
+		Data varification in the frontend
 	*/
 	r.ParseForm()
 	// Email, username and password
@@ -121,7 +120,7 @@ func registerAuthHandler(w http.ResponseWriter, r *http.Request) {
 	*/
 	rf := newUser(username, email, password)
 
-	// Checking email and username
+	// Checking if email and username already exist
 	ux := database.DbUserIdExist(rf.Id)
 	ex := database.DbEmailExist(rf.Email)
 
@@ -141,8 +140,10 @@ func registerAuthHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func commentAuthHandler(w http.ResponseWriter, r *http.Request) {
-	user_id := getUserByCookie(r)
-	if user_id == "" {
+	userId := getUserByCookie(r)
+
+	// Redirect unregistered users
+	if userId == "" {
 		http.Redirect(w, r, "/login", http.StatusSeeOther)
 		return
 	}
@@ -152,32 +153,39 @@ func commentAuthHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	postID, err := strconv.Atoi(strings.TrimPrefix(r.URL.Path, "/commentauth/"))
+	// Get post id from URL
+	postId, err := strconv.Atoi(strings.TrimPrefix(r.URL.Path, "/commentauth/"))
 	if err != nil {
 		http.Error(w, "Bad request - invalid post ID.", http.StatusBadRequest)
 		return
 	}
 
+	// Insert comment to db
 	content := r.FormValue("commentIn")
-
-	err1 := database.DbInsertComment(postID, user_id, content)
+	err1 := database.DbInsertComment(postId, userId, content)
 	if err1 != nil {
 		fmt.Println("DbInsertComment Error")
 	}
-	http.Redirect(w, r, "/post/"+strconv.Itoa(postID), http.StatusSeeOther)
+
+	// Send user to post page
+	http.Redirect(w, r, "/post/"+strconv.Itoa(postId), http.StatusSeeOther)
 }
 
 func createPostAuthHandler(w http.ResponseWriter, r *http.Request) {
-	user_id := getUserByCookie(r)
-	if user_id == "" {
+	userId := getUserByCookie(r)
+
+	// Redirect unregistered users
+	if userId == "" {
 		http.Redirect(w, r, "/login", http.StatusSeeOther)
 		return
 	}
-	// Errpr handling wrong method
+	// Error handling wrong method
 	if r.Method != "POST" {
 		http.Error(w, "Bad request - 405 method not allowed.", http.StatusMethodNotAllowed)
 		return
 	}
+
+	// Add post to db
 	title := r.FormValue("titleIn")
 	content := r.FormValue("contentIn")
 	r.ParseForm()
@@ -191,10 +199,12 @@ func createPostAuthHandler(w http.ResponseWriter, r *http.Request) {
 		tags1 = append(tags1, j)
 	}
 
-	err, _ := database.DbInsertPost(user_id, title, content, tags1)
+	err, _ := database.DbInsertPost(userId, title, content, tags1)
 	if err != nil {
 		fmt.Println("DbInsertpost Error")
 	}
+
+	// Send user to loading page
 	err = tmpl.ExecuteTemplate(w, "createpostauth", nil)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
@@ -203,15 +213,20 @@ func createPostAuthHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func feedbackAuthHandler(w http.ResponseWriter, r *http.Request) {
-	user_id := getUserByCookie(r)
-	if user_id == "" {
+	userId := getUserByCookie(r)
+
+	// Redirect unregistered users
+	if userId == "" {
 		http.Redirect(w, r, "/login", http.StatusSeeOther)
 		return
 	}
+
+	// Get information from URL
 	postRegex := regexp.MustCompile(`post_id=(\d+)`)
 	commentRegex := regexp.MustCompile(`comment_id=(\d+)`)
 	likeRegex := regexp.MustCompile(`like`)
 	dislikeRegex := regexp.MustCompile(`dislike`)
+
 	var postId int
 	var commentId int
 	var feedback string
@@ -244,7 +259,6 @@ func feedbackAuthHandler(w http.ResponseWriter, r *http.Request) {
 		}
 		postId = postID
 		postnr = postID
-		// Check if user liked or disliked the post
 		if dislikeRegex.MatchString(r.URL.Path) {
 			feedback = "-"
 		} else if likeRegex.MatchString(r.URL.Path) {
@@ -252,9 +266,11 @@ func feedbackAuthHandler(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
-	err1 := database.DbInsertFeedback(postId, commentId, user_id, feedback)
+	// Add feedback to db
+	err1 := database.DbInsertFeedback(postId, commentId, userId, feedback)
 	if err1 != nil {
 		fmt.Println("DbInsertfeedback Error")
 	}
+	// Send user to post page
 	http.Redirect(w, r, "/post/"+strconv.Itoa(postnr), http.StatusSeeOther)
 }

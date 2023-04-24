@@ -26,8 +26,8 @@ func StartServer() {
 	mux = http.NewServeMux()
 	mux.HandleFunc("/register", registerHandler)             // registration page
 	mux.HandleFunc("/registerauth", registerAuthHandler)     // registration authentication page
-	mux.HandleFunc("/login", loginHandler)                   // logging page
-	mux.HandleFunc("/loginauth", loginAuthHandler)           // logging authentication page
+	mux.HandleFunc("/login", loginHandler)                   // login page
+	mux.HandleFunc("/loginauth", loginAuthHandler)           // login authentication page
 	mux.HandleFunc("/createpost", createPostHandler)         // creating a post page
 	mux.HandleFunc("/logout", logoutHandler)                 // logout handler
 	mux.HandleFunc("/", mainPageHandler)                     // main page handler
@@ -35,8 +35,8 @@ func StartServer() {
 	mux.HandleFunc("/comment/", commentHandler)              // comment handling
 	mux.HandleFunc("/commentauth/", commentAuthHandler)      // comment authentication handling
 	mux.HandleFunc("/feedbackauth/", feedbackAuthHandler)    // feedback authentication handling
-	mux.HandleFunc("/createpostauth", createPostAuthHandler) //successful post authentication page
-	mux.HandleFunc("/aboutus", aboutUsHandler) 				 //about us page
+	mux.HandleFunc("/createpostauth", createPostAuthHandler) // post authentication handling
+	mux.HandleFunc("/aboutus", aboutUsHandler) 				 // about us page
 
 	// Serving up files
 	mux.Handle("/styles/", http.StripPrefix("/styles/", http.FileServer(http.Dir("./styles/")))) // css serving

@@ -11,22 +11,12 @@ import (
 	_ "github.com/gofrs/uuid"
 )
 
-func getUserByCookie(r *http.Request) string {
-	result := ""
-	cookie, err := r.Cookie("session")
-	if err != nil {
-		return result
-	}
-	result = database.DbGetUserByCookie(cookie.Value)
-	return result
-}
-
 func mainPageHandler(w http.ResponseWriter, r *http.Request) {
-	user_id := getUserByCookie(r)
+	userId := getUserByCookie(r)
 
 	// Error handling with wrong path
 	if r.URL.Path != "/" {
-		tmpl.ExecuteTemplate(w, "error", user_id)
+		tmpl.ExecuteTemplate(w, "error", userId)
 		return
 	}
 	// Wrong method handling
@@ -36,13 +26,7 @@ func mainPageHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Getting content
-	mainPageContent := getMainPageContent(user_id, r.URL.Query())
-	/*
-		var mainPageContent database.Mainpage
-		mainPageContent.User_id = user_id
-		mainPageContent.Posts = database.DbGetPosts()
-		mainPageContent.Tags = database.DbGetTags()
-	*/
+	mainPageContent := getMainPageContent(userId, r.URL.Query())
 
 	err := tmpl.ExecuteTemplate(w, "index", mainPageContent)
 	if err != nil {
@@ -52,8 +36,10 @@ func mainPageHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func commentHandler(w http.ResponseWriter, r *http.Request) {
-	user_id := getUserByCookie(r)
-	if user_id == "" {
+	userId := getUserByCookie(r)
+
+	// Redirect unregistered users
+	if userId == "" {
 		http.Redirect(w, r, "/login", http.StatusSeeOther)
 		return
 	}
@@ -71,11 +57,11 @@ func commentHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Getting content
-	err, postPageContent := getPostPageContent(postID, user_id)
+	err, postPageContent := getPostPageContent(postID, userId)
 
 	// If missing
 	if err != nil {
-		tmpl.ExecuteTemplate(w, "error", user_id)
+		tmpl.ExecuteTemplate(w, "error", userId)
 		fmt.Println(http.StatusNotFound)
 		return
 	}
@@ -89,7 +75,7 @@ func commentHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func postHandler(w http.ResponseWriter, r *http.Request) {
-	user_id := getUserByCookie(r)
+	userId := getUserByCookie(r)
 
 	// Wrong method handling
 	if r.Method != "GET" {
@@ -105,11 +91,11 @@ func postHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Getting content
-	err, postPageContent := getPostPageContent(postID, user_id)
+	err, postPageContent := getPostPageContent(postID, userId)
 
 	// If missing
 	if err != nil {
-		tmpl.ExecuteTemplate(w, "error", user_id)
+		tmpl.ExecuteTemplate(w, "error", userId)
 		fmt.Println(http.StatusNotFound)
 		return
 	}
@@ -123,20 +109,26 @@ func postHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func createPostHandler(w http.ResponseWriter, r *http.Request) {
-	user_id := getUserByCookie(r)
+	userId := getUserByCookie(r)
+
+	// Redirect unregistered users
+	if userId == "" {
+		http.Redirect(w, r, "/login", http.StatusSeeOther)
+		return
+	}
 
 	if r.Method != "POST" {
 		// Error handling with wrong path
 		if r.URL.Path != "/createpost" {
-			tmpl.ExecuteTemplate(w, "error", user_id)
+			tmpl.ExecuteTemplate(w, "error", userId)
 			fmt.Println(http.StatusNotFound)
 			return
 		}
 
 		// Getting content
-		createPostPageContent := getCreatePostPageContent(user_id)
+		createPostPageContent := getCreatePostPageContent(userId)
 
-		// login connection
+		// Create post connection
 		err := tmpl.ExecuteTemplate(w, "createpost", createPostPageContent)
 		if err != nil {
 			http.Error(w, err.Error(), http.StatusInternalServerError)
@@ -146,11 +138,17 @@ func createPostHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func loginHandler(w http.ResponseWriter, r *http.Request) {
-	user_id := getUserByCookie(r)
+	userId := getUserByCookie(r)
+
+	// Redirect if already logged in
+	if userId != "" {
+		http.Redirect(w, r, "/", http.StatusSeeOther)
+		return
+	}
 
 	// Error handling with wrong path
 	if r.URL.Path != "/login" {
-		tmpl.ExecuteTemplate(w, "error", user_id)
+		tmpl.ExecuteTemplate(w, "error", userId)
 		fmt.Println(http.StatusNotFound)
 		return
 	}
@@ -169,13 +167,13 @@ func loginHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func aboutUsHandler(w http.ResponseWriter, r *http.Request) {
-	user_id := getUserByCookie(r)
+	userId := getUserByCookie(r)
 	readme, err := os.ReadFile("README.md")
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
-	err = tmpl.ExecuteTemplate(w, "about", database.Aboutpage{User_id: user_id, Content: string(readme)})
+	err = tmpl.ExecuteTemplate(w, "about", database.Aboutpage{User_id: userId, Content: string(readme)})
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
@@ -183,14 +181,18 @@ func aboutUsHandler(w http.ResponseWriter, r *http.Request) {
 	return
 }
 
-// TODO ta teeb praegu miskipärast kaks korda seda päringut (teine on tühi), luua login ja reg endpoint erinevalt esialgu
-// registerAuthHandler creates new user in database
 func registerHandler(w http.ResponseWriter, r *http.Request) {
-	user_id := getUserByCookie(r)
+	userId := getUserByCookie(r)
+
+	// Redirect if already logged in user
+	if userId != "" {
+		http.Redirect(w, r, "/", http.StatusSeeOther)
+		return
+	}
 
 	// Error handling with wrong path
 	if r.URL.Path != "/register" {
-		tmpl.ExecuteTemplate(w, "error", user_id)
+		tmpl.ExecuteTemplate(w, "error", userId)
 		fmt.Println(http.StatusNotFound)
 		return
 	}
