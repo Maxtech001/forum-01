@@ -33,6 +33,26 @@ go run .
 ```
 The application will start on port 8080. Go to localhost:8080 on your browser.
 
+To open the database, use:
+```bash
+ sqlite3 ./db/forum.db
+```
+
+To see all the users, open the database and use:
+```sqlite3
+ SELECT * FROM user;
+
+```
+To see all the posts, use:
+```sqlite3
+ SELECT * FROM post;
+```
+
+To see all the comments, use:
+```sqlite3
+ SELECT * FROM comment;
+```
+
 ### 🐋 Docker
 
 1. Build the image:
