@@ -20,7 +20,7 @@ We started working on the project at the beginning of March and we use Bootstrap
 
 ## 🏃‍♂️ Running the program
 
-### Terminal
+### ✈️ Terminal
 Make sure you have all the necessary third-party packages installed.
 
 You can run the code with:
@@ -48,6 +48,8 @@ To see all the comments, use:
 ```sqlite3
  SELECT * FROM comment;
 ```
+To exit the terminal, use `Ctrl + D`
+
 
 ### 🐋 Docker
 
