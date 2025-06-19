@@ -1,4 +1,4 @@
-FROM alpine:3.17 as base
+FROM alpine:3.17 AS base
 
 # To see inside the container workaround for audit
 RUN apk add --no-cache bash
@@ -34,7 +34,7 @@ RUN go mod download
 RUN go build -o forum-docker .
 
 # DEPLOY
-FROM base as final
+FROM base AS final
 
 # App settings
 RUN mkdir /app
