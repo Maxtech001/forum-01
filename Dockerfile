@@ -6,10 +6,10 @@ RUN apk add --no-cache bash
 EXPOSE 8080
 
 # Metainfo
-LABEL version="0.1" 
-LABEL status="dev"
-LABEL maintainers="Forum team"
-LABEL organization="kood/Jõhvi"
+#LABEL version="0.1" 
+#LABEL status="dev"
+#LABEL maintainers="Forum team"
+#LABEL organization="kood/Jõhvi"
 
 # BUILD
 FROM golang:1.19-alpine as build
