@@ -1,47 +1,41 @@
+# Base image
 FROM alpine:3.17 AS base
 
-# To see inside the container workaround for audit
+# Install bash (useful for debugging or runtime scripts)
 RUN apk add --no-cache bash
 
 EXPOSE 8080
 
-# Metainfo
-#LABEL version="0.1" 
-#LABEL status="dev"
-#LABEL maintainers="Forum team"
-#LABEL organization="kood/Jõhvi"
-
-# BUILD
+# === BUILD STAGE ===
 FROM golang:1.19-alpine AS build
 
-# App settings
-RUN mkdir /build
+# Install necessary packages in one layer
+RUN apk add --no-cache build-base sqlite
 
-COPY . /build
+# Set working directory
 WORKDIR /build
 
-# Install C compiler and sqlite3
-RUN apk add --no-cache build-base
-RUN apk add --no-cache sqlite
+# Copy source code
+COPY . .
 
-# Database creation logic
+# Create SQLite DB
 RUN mkdir db && sqlite3 ./db/forum.db < db.sql
 
-# Download dependencies
+# Download Go dependencies
 RUN go mod download
 
-# Building go app
+# Build Go app
 RUN go build -o forum-docker .
 
-# DEPLOY
+# === FINAL STAGE ===
 FROM base AS final
 
-# App settings
-RUN mkdir /app
+# Create app directory and set it as working dir
 WORKDIR /app
 
-# Copy build
-COPY --from=build /build .
+# Copy built app and DB from build stage
+COPY --from=build /build/forum-docker .
+COPY --from=build /build/db ./db
 
-# Command to run the container
+# Run the app
 CMD ["/app/forum-docker"]
