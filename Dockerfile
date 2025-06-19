@@ -1,7 +1,7 @@
-# Base image
+# === BASE STAGE ===
 FROM alpine:3.17 AS base
 
-# Install bash (useful for debugging or runtime scripts)
+# Bash for debugging or interactive shell use
 RUN apk add --no-cache bash
 
 EXPOSE 8080
@@ -9,33 +9,38 @@ EXPOSE 8080
 # === BUILD STAGE ===
 FROM golang:1.19-alpine AS build
 
-# Install necessary packages in one layer
+# Install build dependencies
 RUN apk add --no-cache build-base sqlite
 
-# Set working directory
+# Set up build directory
 WORKDIR /build
 
-# Copy source code
+# Copy everything into the container
 COPY . .
 
-# Create SQLite DB
+# Create database
 RUN mkdir db && sqlite3 ./db/forum.db < db.sql
 
 # Download Go dependencies
 RUN go mod download
 
-# Build Go app
+# Build the Go application
 RUN go build -o forum-docker .
 
 # === FINAL STAGE ===
 FROM base AS final
 
-# Create app directory and set it as working dir
 WORKDIR /app
 
-# Copy built app and DB from build stage
+# Copy the built binary
 COPY --from=build /build/forum-docker .
+
+# ✅ Copy required runtime folders
+COPY --from=build /build/templates ./templates
+COPY --from=build /build/styles ./styles
+COPY --from=build /build/js ./js
 COPY --from=build /build/db ./db
 
-# Run the app
-CMD ["/app/forum-docker"]
+# Run the application
+CMD ["./forum-docker"]
+
