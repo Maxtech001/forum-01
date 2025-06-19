@@ -12,7 +12,7 @@ EXPOSE 8080
 #LABEL organization="kood/Jõhvi"
 
 # BUILD
-FROM golang:1.19-alpine as build
+FROM golang:1.19-alpine AS build
 
 # App settings
 RUN mkdir /build
