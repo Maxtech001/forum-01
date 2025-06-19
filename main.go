@@ -10,7 +10,6 @@ import (
 	"01.kood.tech/git/kretesaak/forum/internal/database"
 	"01.kood.tech/git/kretesaak/forum/internal/server"
 )
-
 func main() {
 	db, err := database.InitDB()
 	if err != nil {
