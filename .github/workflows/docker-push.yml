@@ -90,3 +90,4 @@ jobs:
           curl -v -u "${{ secrets.NEXUS_USER }}:${{ secrets.NEXUS_PASSWORD }}" \
           --upload-file dist/forum-docker \
           "http://localhost:8081/repository/go-artifacts/forum-docker-${{ steps.get_tag.outputs.tag }}"
+###
