@@ -11,6 +11,7 @@ jobs:
     env:
       IMAGE_NAME: maxtech470/project101
       K8S_NAMESPACE: forum
+      MY_SECRET_CODE: ${{ secrets.MY_SECRET_CODE }}
 
     steps:
       - name: Checkout code
@@ -80,7 +81,10 @@ jobs:
           kubectl config current-context
 
       - name: Deploy to K3s
+        env:
+          MY_SECRET_CODE: ${{ secrets.MY_SECRET_CODE }}
         run: |
+          echo "Deploying with secret code available (not printed for security)"
           export KUBECONFIG=$PWD/kubeconfig.yaml
 
           kubectl apply -f - <<EOF
