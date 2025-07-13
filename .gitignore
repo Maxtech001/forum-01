@@ -1,3 +1,4 @@
 /.vscode
 .terraform/
 .forum-app-deployment/
+/db/forum.db
