@@ -1,77 +1,150 @@
-name: Tag, Scan, and Push Docker Image
-
+name: Build, Push, and Deploy to K3s
 on:
   push:
     branches: [master]
 
 jobs:
-  build-and-push:
-    runs-on: ubuntu-latest
+  build-deploy:
+    runs-on: self-hosted
+
     env:
       IMAGE_NAME: maxtech470/project101
+      K8S_NAMESPACE: forum
 
     steps:
-    - name: Checkout code
-      uses: actions/checkout@v3
+      - name: Checkout code
+        uses: actions/checkout@v3
 
-    - name: Set up Go
-      uses: actions/setup-go@v5
-      with:
-        go-version: '1.21'  # Adjust to your Go version
+      - name: Set up Go
+        uses: actions/setup-go@v5
+        with:
+          go-version: '1.21'
 
-    - name: Set up JDK 17 (required for SonarCloud)
-      uses: actions/setup-java@v3
-      with:
-        distribution: 'temurin'
-        java-version: '17'
+      - name: Set up JDK 17 (required for Nexus step)
+        uses: actions/setup-java@v3
+        with:
+          distribution: 'temurin'
+          java-version: '17'
 
-    - name: Cache SonarCloud packages
-      uses: actions/cache@v3
-      with:
-        path: ~/.sonar/cache
-        key: ${{ runner.os }}-sonar
-        restore-keys: ${{ runner.os }}-sonar
+      - name: Run Go tests and generate coverage report
+        run: |
+          go test ./... -coverprofile=coverage.out
 
-    - name: Run Go tests and generate coverage
-      run: go test ./... -coverprofile=coverage.out
+      - name: Log in to Docker Hub
+        run: echo "${{ secrets.DOCKER_PASSWORD }}" | docker login -u "${{ secrets.DOCKER_USERNAME }}" --password-stdin
 
-    - name: SonarCloud Scan
-      uses: SonarSource/sonarcloud-github-action@v2
-      with:
-        projectBaseDir: .
-      env:
-        SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+      - name: Get next semantic version tag
+        id: get_tag
+        run: |
+          tags=$(curl -s https://hub.docker.com/v2/repositories/${IMAGE_NAME}/tags/?page_size=100 | jq -r '.results[].name' | grep -E '^v[0-9]+\.[0-9]+\.[0-9]+$' | sort -V)
+          if [ -z "$tags" ]; then
+            next="v1.0.0"
+          else
+            latest=$(echo "$tags" | tail -n 1)
+            major=$(echo $latest | cut -d. -f1 | sed 's/v//')
+            minor=$(echo $latest | cut -d. -f2)
+            patch=$(echo $latest | cut -d. -f3)
+            patch=$((patch + 1))
+            next="v${major}.${minor}.${patch}"
+          fi
+          echo "tag=$next" >> $GITHUB_OUTPUT
 
-    - name: Log in to Docker Hub
-      run: echo "${{ secrets.DOCKER_PASSWORD }}" | docker login -u "${{ secrets.DOCKER_USERNAME }}" --password-stdin
+      - name: Build Docker image
+        run: docker build -t $IMAGE_NAME:${{ steps.get_tag.outputs.tag }} .
 
-    - name: Get next semantic version tag
-      id: get_tag
-      run: |
-        tags=$(curl -s https://hub.docker.com/v2/repositories/${IMAGE_NAME}/tags/?page_size=100 | jq -r '.results[].name' | grep -E '^v[0-9]+\.[0-9]+\.[0-9]+$' | sort -V)
+      - name: Tag image as latest
+        run: docker tag $IMAGE_NAME:${{ steps.get_tag.outputs.tag }} $IMAGE_NAME:latest
 
-        if [ -z "$tags" ]; then
-          next="v1.0.0"
-        else
-          latest=$(echo "$tags" | tail -n 1)
-          major=$(echo $latest | cut -d. -f1 | sed 's/v//')
-          minor=$(echo $latest | cut -d. -f2)
-          patch=$(echo $latest | cut -d. -f3)
-          patch=$((patch + 1))
-          next="v${major}.${minor}.${patch}"
-        fi
+      - name: Push Docker images
+        run: |
+          docker push $IMAGE_NAME:${{ steps.get_tag.outputs.tag }}
+          docker push $IMAGE_NAME:latest
 
-        echo "Next tag: $next"
-        echo "tag=$next" >> $GITHUB_OUTPUT
+      - name: Build Go binary
+        run: |
+          mkdir -p dist
+          go build -o dist/forum-docker .
 
-    - name: Build Docker image
-      run: docker build -t $IMAGE_NAME:${{ steps.get_tag.outputs.tag }} .
+      - name: Upload artifact to Nexus
+        run: |
+          curl -v -u "${{ secrets.NEXUS_USER }}:${{ secrets.NEXUS_PASSWORD }}" \
+          --upload-file dist/forum-docker \
+          "http://localhost:8081/repository/go-artifacts/forum-docker-${{ steps.get_tag.outputs.tag }}"
 
-    - name: Tag image as latest
-      run: docker tag $IMAGE_NAME:${{ steps.get_tag.outputs.tag }} $IMAGE_NAME:latest
+      - name: Setup kubectl
+        run: |
+          echo "${{ secrets.KUBECONFIG }}" > kubeconfig.yaml
+          export KUBECONFIG=$PWD/kubeconfig.yaml
+          kubectl version --short
+          kubectl config current-context
 
-    - name: Push Docker image
-      run: |
-        docker push $IMAGE_NAME:${{ steps.get_tag.outputs.tag }}
-        docker push $IMAGE_NAME:latest
+      - name: Deploy to K3s
+        run: |
+          export KUBECONFIG=$PWD/kubeconfig.yaml
 
+          kubectl apply -f - <<EOF
+          apiVersion: v1
+          kind: Namespace
+          metadata:
+            name: ${K8S_NAMESPACE}
+          EOF
+
+          cat <<EOF | kubectl apply -f -
+          apiVersion: apps/v1
+          kind: Deployment
+          metadata:
+            name: forum-app
+            namespace: ${K8S_NAMESPACE}
+          spec:
+            replicas: 1
+            selector:
+              matchLabels:
+                app: forum
+            template:
+              metadata:
+                labels:
+                  app: forum
+              spec:
+                containers:
+                  - name: forum
+                    image: ${IMAGE_NAME}:${{ steps.get_tag.outputs.tag }}
+                    ports:
+                      - containerPort: 8080
+          EOF
+
+          cat <<EOF | kubectl apply -f -
+          apiVersion: v1
+          kind: Service
+          metadata:
+            name: forum-service
+            namespace: ${K8S_NAMESPACE}
+          spec:
+            selector:
+              app: forum
+            ports:
+              - port: 80
+                targetPort: 8080
+            type: ClusterIP
+          EOF
+
+          cat <<EOF | kubectl apply -f -
+          apiVersion: networking.k8s.io/v1
+          kind: Ingress
+          metadata:
+            name: forum-ingress
+            namespace: ${K8S_NAMESPACE}
+            annotations:
+              nginx.ingress.kubernetes.io/rewrite-target: /
+          spec:
+            ingressClassName: nginx
+            rules:
+              - http:
+                  paths:
+                    - path: /
+                      pathType: Prefix
+                      backend:
+                        service:
+                          name: forum-service
+                          port:
+                            number: 80
+          EOF

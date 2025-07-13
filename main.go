@@ -1,4 +1,4 @@
-package main
+ppackage main
 
 import (
 	"fmt"
@@ -10,10 +10,10 @@ import (
 	"01.kood.tech/git/kretesaak/forum/internal/database"
 	"01.kood.tech/git/kretesaak/forum/internal/server"
 )
+
 func main() {
 	db, err := database.InitDB()
 	if err != nil {
-
 		log.Fatalf("Internal server error - %v", http.StatusInternalServerError)
 		return
 	}
@@ -28,17 +28,16 @@ func main() {
 		}
 	}()
 
-	// Starting server
-	if len(os.Args) == 1 {
-	} else if len(os.Args) == 2 {
+	// ✅ Set default port if not provided via command-line
+	if len(os.Args) == 2 {
 		server.Port = os.Args[1]
 	} else {
-		log.Fatalf("Internal server error - %v", http.StatusInternalServerError)
-		return
+		server.Port = "8080"
 	}
+
 	fmt.Println("Server starting...")
-	fmt.Println("\nOpen http://localhost:" + " with the specified port in browser")
-	fmt.Println("\nCtrl + C to close server")
+	fmt.Printf("\nOpen http://localhost:%s in your browser\n", server.Port)
+	fmt.Println("\nPress Ctrl + C to stop the server")
 
 	server.StartServer()
 }
