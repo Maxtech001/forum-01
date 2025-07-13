@@ -77,7 +77,7 @@ jobs:
         run: |
           echo "${{ secrets.KUBECONFIG }}" | base64 -d > kubeconfig.yaml
           export KUBECONFIG=$PWD/kubeconfig.yaml
-          kubectl version
+          kubectl version --client
           kubectl config current-context
 
       - name: Deploy to K3s
