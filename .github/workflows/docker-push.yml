@@ -13,14 +13,22 @@ jobs:
     env:
       IMAGE_NAME: maxtech470/project101
       K8S_NAMESPACE: forum
+<<<<<<< HEAD
       K8S_NAMESPACE: forum
+=======
+      MY_SECRET_CODE: ${{ secrets.MY_SECRET_CODE }}
+>>>>>>> b5888cd89c9c4f86bae2a688fe35577e96592a56
 
     steps:
       - name: Checkout code
         uses: actions/checkout@v3
+<<<<<<< HEAD
       - name: Checkout code
         uses: actions/checkout@v3
 
+=======
+        
+>>>>>>> b5888cd89c9c4f86bae2a688fe35577e96592a56
       - name: Set up Go
         uses: actions/setup-go@v5
         with:
@@ -116,21 +124,26 @@ jobs:
 
       - name: Setup kubectl
         run: |
-          echo "${{ secrets.KUBECONFIG }}" > kubeconfig.yaml
+          echo "${{ secrets.KUBECONFIG }}" | base64 -d > kubeconfig.yaml
           export KUBECONFIG=$PWD/kubeconfig.yaml
-          kubectl version --short
+          kubectl version --client
           kubectl config current-context
 
-      - name: Deploy to K3s
+      - name: Create namespace if not exists
         run: |
           export KUBECONFIG=$PWD/kubeconfig.yaml
-
           kubectl apply -f - <<EOF
           apiVersion: v1
           kind: Namespace
           metadata:
             name: ${K8S_NAMESPACE}
           EOF
+
+      - name: Deploy app manifests to K3s
+        env:
+          MY_SECRET_CODE: ${{ secrets.MY_SECRET_CODE }}
+        run: |
+          export KUBECONFIG=$PWD/kubeconfig.yaml
 
           cat <<EOF | kubectl apply -f -
           apiVersion: apps/v1
