@@ -80,19 +80,21 @@ jobs:
           kubectl version --client
           kubectl config current-context
 
-      - name: Deploy to K3s
-        env:
-          MY_SECRET_CODE: ${{ secrets.MY_SECRET_CODE }}
+      - name: Create namespace if not exists
         run: |
-          echo "Deploying with secret code available (not printed for security)"
           export KUBECONFIG=$PWD/kubeconfig.yaml
-
           kubectl apply -f - <<EOF
           apiVersion: v1
           kind: Namespace
           metadata:
             name: ${K8S_NAMESPACE}
           EOF
+
+      - name: Deploy app manifests to K3s
+        env:
+          MY_SECRET_CODE: ${{ secrets.MY_SECRET_CODE }}
+        run: |
+          export KUBECONFIG=$PWD/kubeconfig.yaml
 
           cat <<EOF | kubectl apply -f -
           apiVersion: apps/v1
