@@ -18,17 +18,6 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v3
 
-      - name: Set up Go
-        uses: actions/setup-go@v5
-        with:
-          go-version: '1.21'
-
-      - name: Set up JDK 17 (for Nexus)
-        uses: actions/setup-java@v3
-        with:
-          distribution: 'temurin'
-          java-version: '17'
-
       - name: Run Go tests and generate coverage report
         run: go test ./... -coverprofile=coverage.out
 
@@ -42,11 +31,6 @@ jobs:
       #     curl -v -u "${{ secrets.NEXUS_USER }}:${{ secrets.NEXUS_PASSWORD }}" \
       #     --upload-file dist/forum-docker \
       #     "http://host.docker.internal:8081/repository/go-artifacts/forum-docker-${{ github.sha }}"
-
-      - name: Set up Helm
-        uses: azure/setup-helm@v3
-        with:
-          version: v3.9.0
 
       - name: Log in to Docker Hub
         run: echo "${{ secrets.DOCKER_PASSWORD }}" | docker login -u "${{ secrets.DOCKER_USERNAME }}" --password-stdin
