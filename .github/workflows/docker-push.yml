@@ -1,4 +1,4 @@
-name: Build, Push, and Deploy to K3s
+name: Deploy to K3s
 
 on:
   push:
