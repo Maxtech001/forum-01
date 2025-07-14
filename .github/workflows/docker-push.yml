@@ -60,7 +60,7 @@ jobs:
             labels:
               app: project101
           spec:
-            replicas: 4
+            replicas: 10
             selector:
               matchLabels:
                 app: project101
