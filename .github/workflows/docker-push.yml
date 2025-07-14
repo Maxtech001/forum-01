@@ -13,7 +13,7 @@ jobs:
       K8S_NAMESPACE: forum
       MY_SECRET_CODE: ${{ secrets.MY_SECRET_CODE }}
       COMMIT_TAG: latest
-
+      
     steps:
       - name: Checkout code
         uses: actions/checkout@v3
