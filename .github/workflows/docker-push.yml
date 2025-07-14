@@ -83,7 +83,7 @@ jobs:
             labels:
               app: project101
           spec:
-            replicas: 3
+            replicas: 6
             selector:
               matchLabels:
                 app: project101
