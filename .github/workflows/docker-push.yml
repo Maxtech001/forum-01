@@ -108,5 +108,5 @@ jobs:
               - protocol: TCP
                 port: 80
                 targetPort: 8080
-                nodePort: 30776
+                nodePort: 31000
           EOF
