@@ -31,6 +31,25 @@ jobs:
           # Create namespace if it doesn't exist
           kubectl get namespace ${K8S_NAMESPACE} || kubectl create namespace ${K8S_NAMESPACE}
 
+          # Find a free NodePort between 30000-32767
+          # List all used nodePorts in the cluster
+          USED_PORTS=$(kubectl get svc --all-namespaces -o jsonpath='{.items[*].spec.ports[*].nodePort}' | tr ' ' '\n' | sort -n | uniq)
+          
+          # Function to find a free port in range
+          find_free_port() {
+            for port in $(seq 30000 32767); do
+              if ! echo "$USED_PORTS" | grep -qx "$port"; then
+                echo "$port"
+                return
+              fi
+            done
+            echo "No free nodePort available!" >&2
+            exit 1
+          }
+          
+          NODE_PORT=$(find_free_port)
+          echo "Using NodePort: $NODE_PORT"
+
           # Apply Deployment
           cat <<EOF | kubectl apply -f -
           apiVersion: apps/v1
@@ -57,7 +76,7 @@ jobs:
                       - containerPort: 8080
           EOF
 
-          # Apply Service (no nodePort for dynamic assignment)
+          # Apply Service with dynamic NodePort
           cat <<EOF | kubectl apply -f -
           apiVersion: v1
           kind: Service
@@ -72,4 +91,5 @@ jobs:
               - protocol: TCP
                 port: 80
                 targetPort: 8080
+                nodePort: $NODE_PORT
           EOF
