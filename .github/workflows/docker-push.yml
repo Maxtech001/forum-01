@@ -1,4 +1,4 @@
-name: Deploy Only to K3s
+name: Build, Push, and Deploy to K3s
 
 on:
   push:
@@ -18,6 +18,31 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v3
 
+      - name: Set up Go
+        uses: actions/setup-go@v5
+        with:
+          go-version: '1.21'
+
+      - name: Set up JDK 17 (for Nexus)
+        uses: actions/setup-java@v3
+        with:
+          distribution: 'temurin'
+          java-version: '17'
+
+      - name: Run Go tests and generate coverage report
+        run: go test ./... -coverprofile=coverage.out
+
+      - name: Build Go binary
+        run: |
+          mkdir -p dist
+          go build -o dist/forum-docker .
+
+      - name: Upload artifact to Nexus
+        run: |
+          curl -v -u "${{ secrets.NEXUS_USER }}:${{ secrets.NEXUS_PASSWORD }}" \
+          --upload-file dist/forum-docker \
+          "http://localhost:8081/repository/go-artifacts/forum-docker-${{ GITHUB_SHA }}"
+
       - name: Log in to Docker Hub
         run: echo "${{ secrets.DOCKER_PASSWORD }}" | docker login -u "${{ secrets.DOCKER_USERNAME }}" --password-stdin
 
@@ -26,16 +51,14 @@ jobs:
           echo "${{ secrets.KUBECONFIG }}" | base64 -d > kubeconfig.yaml
           export KUBECONFIG=$PWD/kubeconfig.yaml
           kubectl version --client
-          kubectl config current-context
+          kubectl config current-context || echo "No current context set"
 
           # Create namespace if it doesn't exist
           kubectl get namespace ${K8S_NAMESPACE} || kubectl create namespace ${K8S_NAMESPACE}
 
           # Find a free NodePort between 30000-32767
-          # List all used nodePorts in the cluster
           USED_PORTS=$(kubectl get svc --all-namespaces -o jsonpath='{.items[*].spec.ports[*].nodePort}' | tr ' ' '\n' | sort -n | uniq)
           
-          # Function to find a free port in range
           find_free_port() {
             for port in $(seq 30000 32767); do
               if ! echo "$USED_PORTS" | grep -qx "$port"; then
@@ -74,6 +97,9 @@ jobs:
                     image: ${IMAGE_NAME}:${COMMIT_TAG}
                     ports:
                       - containerPort: 8080
+                    env:
+                      - name: MY_SECRET_CODE
+                        value: "${MY_SECRET_CODE}"
           EOF
 
           # Apply Service with dynamic NodePort
@@ -92,4 +118,27 @@ jobs:
                 port: 80
                 targetPort: 8080
                 nodePort: $NODE_PORT
+          EOF
+
+          # Apply Ingress
+          cat <<EOF | kubectl apply -f -
+          apiVersion: networking.k8s.io/v1
+          kind: Ingress
+          metadata:
+            name: project101-ingress
+            namespace: ${K8S_NAMESPACE}
+            annotations:
+              nginx.ingress.kubernetes.io/rewrite-target: /
+          spec:
+            ingressClassName: nginx
+            rules:
+              - http:
+                  paths:
+                    - path: /
+                      pathType: Prefix
+                      backend:
+                        service:
+                          name: project101-service
+                          port:
+                            number: 80
           EOF
