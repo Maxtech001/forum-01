@@ -58,7 +58,7 @@ jobs:
 
           # Find a free NodePort between 30000-32767
           USED_PORTS=$(kubectl get svc --all-namespaces -o jsonpath='{.items[*].spec.ports[*].nodePort}' | tr ' ' '\n' | sort -n | uniq)
-          
+
           find_free_port() {
             for port in $(seq 30000 32767); do
               if ! echo "$USED_PORTS" | grep -qx "$port"; then
@@ -69,7 +69,7 @@ jobs:
             echo "No free nodePort available!" >&2
             exit 1
           }
-          
+
           NODE_PORT=$(find_free_port)
           echo "Using NodePort: $NODE_PORT"
 
@@ -142,3 +142,28 @@ jobs:
                           port:
                             number: 80
           EOF
+
+      - name: Install Helm
+        uses: azure/setup-helm@v3
+
+      - name: Add Prometheus Community Helm Repo
+        run: helm repo add prometheus-community https://prometheus-community.github.io/helm-charts
+
+      - name: Update Helm repos
+        run: helm repo update
+
+      - name: Deploy kube-prometheus-stack for monitoring
+        run: |
+          # Create monitoring namespace
+          kubectl get namespace monitoring || kubectl create namespace monitoring
+
+          # Install or upgrade Prometheus & Grafana via Helm
+          helm upgrade --install monitoring prometheus-community/kube-prometheus-stack \
+            --namespace monitoring \
+            --set grafana.enabled=true \
+            --set prometheus.prometheusSpec.serviceMonitorSelectorNilUsesHelmValues=false
+
+      - name: Wait for monitoring pods to be ready
+        run: |
+          kubectl rollout status deployment/monitoring-grafana -n monitoring --timeout=120s
+          kubectl rollout status statefulset/monitoring-prometheus-prometheus -n monitoring --timeout=120s
