@@ -86,3 +86,146 @@ The server is written in Go. HTML, CSS and JavaScript are used for frontend. SQL
 @kretesaak \
 @margus.aid \
 @GhanBuriGhan
+
+
+
+
+# Project101 – CI/CD Deployment to K3s with GitHub Actions
+
+This repository contains a Go application that is automatically built, tested, containerized, and deployed to a K3s Kubernetes cluster using GitHub Actions.
+
+## Workflow Overview
+
+On every push to the `master` branch, GitHub Actions performs the following steps:
+
+1. Clone the repository
+2. Set up the Go and Java environments
+3. Run tests and generate a code coverage report
+4. Build the Go binary
+5. Build and push a Docker image to Docker Hub
+6. Deploy the application to K3s:
+   - Creates or updates a Kubernetes Deployment
+   - Uses a dynamically assigned NodePort for the service
+   - Sets up an Ingress resource for external access
+
+## Docker Image
+
+The Docker image is tagged `latest` and pushed to:
+
+docker.io/maxtech470/project101:latest
+
+markdown
+Copy
+Edit
+
+You can update the `COMMIT_TAG` variable in the workflow to use versioned tags if desired.
+
+## Kubernetes Configuration
+
+- Namespace: `forum`
+- Replicas: 6
+- Container port: 8080
+- Service port: 80
+- NodePort: dynamically assigned between 30000–32767
+- Ingress path: `/`
+- Ingress controller: expects `nginx` class
+
+## Required GitHub Secrets
+
+To enable this workflow, the following secrets must be configured in your GitHub repository:
+
+| Secret Name           | Description                                       |
+|-----------------------|---------------------------------------------------|
+| `DOCKER_USERNAME`     | Docker Hub username                               |
+| `DOCKER_PASSWORD`     | Docker Hub password or personal access token      |
+| `KUBECONFIG`          | Base64-encoded kubeconfig for accessing the K3s cluster |
+| `MY_SECRET_CODE`      | Application-level secret passed as an environment variable |
+
+To encode your kubeconfig:
+base64 -w 0 ~/.kube/config
+
+shell
+Copy
+Edit
+
+## Accessing the Application
+
+After deployment, the workflow prints the dynamically selected NodePort. Use that to access the application:
+
+http://<node-ip>:<nodePort>
+
+vbnet
+Copy
+Edit
+
+If you're using Ingress and DNS, point a domain (or your local `/etc/hosts`) to your K3s node IP and access the app at:
+
+http://project101.local/
+
+markdown
+Copy
+Edit
+
+## Monitoring Integration (Prometheus and Grafana)
+
+1. Ensure Prometheus is scraping your application's `/metrics` endpoint.
+2. Add the service name to Prometheus' `scrape_configs`.
+3. In Grafana:
+   - Add Prometheus as a data source using this URL:
+     ```
+     http://prometheus-server.monitoring.svc.cluster.local:80
+     ```
+   - Create dashboards using Prometheus queries.
+
+## Example API Usage
+
+Test the application after deployment using curl:
+
+curl http://<node-ip>:<nodePort>/
+
+css
+Copy
+Edit
+
+To hit a specific endpoint with a header:
+
+curl -H "Authorization: Bearer <token>" http://<node-ip>:<nodePort>/api/health
+
+vbnet
+Copy
+Edit
+
+## Migrating to Helm (Optional)
+
+To modularize the deployment using Helm:
+
+1. Create a chart:
+helm create project101
+
+sql
+Copy
+Edit
+2. Move your Kubernetes manifests into the `templates/` folder and replace hardcoded values with variables.
+3. Update your GitHub Action to install using Helm:
+helm upgrade --install project101 ./chart/project101 -n forum --set image.tag=latest
+
+shell
+Copy
+Edit
+
+## Manual Debugging
+
+You can apply the manifests locally for troubleshooting:
+
+kubectl apply -f <generated-manifest>.yaml
+
+css
+Copy
+Edit
+
+Or forward a local port to the service:
+
+kubectl port-forward svc/project101-service -n forum 8080:80
+
+Author:
+@maxtech001 (Jude Ifeanyi Eze)
